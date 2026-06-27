@@ -1,0 +1,139 @@
+# Plan du mariage : web-app de placement de tables
+
+## Le besoin
+
+Préparer un mariage en plaçant des **tables rondes** sur les plans des lieux.
+Je veux une petite web-app que j'ouvre dans le navigateur pour :
+
+- voir les pièces dessinées **à l'échelle** ;
+- **ajouter des tables rondes** et les **déplacer** à la souris ou au doigt ;
+- savoir tout de suite si une table **dépasse d'un mur** ou **chevauche** une autre table (avec les marges de dégagement) ;
+- régler le **diamètre des tables**, l'**espace entre tables** et l'**espace table/mur** ;
+- lire un **compteur** : nombre de tables valides + nombre de couverts estimé.
+
+Deux espaces sont concernés : le **salon** (pièce principale, en L) et la **terrasse** (en L également).
+
+## Source des dimensions
+
+Les cotes viennent de deux croquis faits à la main (`../esquisses-a-la-main/`, en centimètres).
+Les croquis ne sont pas tracés à l'échelle ; j'ai recoupé les chiffres avec les proportions des dessins.
+
+### Convention
+
+Repère par plan : origine en haut à gauche, **x vers la droite**, **y vers le bas**, unité **centimètre**.
+
+### Salon (pièce principale, en L)
+
+Contour (polygone, sens horaire depuis le coin haut-gauche) :
+
+```
+(0,0) -> (498,0) -> (498,406) -> (358,406) -> (358,720) -> (0,720) -> retour
+```
+
+La pièce est le grand rectangle 498 x 720 **moins** une encoche en bas à droite de 140 x 314.
+
+| Mur | De / à | Longueur | Ouverture |
+|-----|--------|----------|-----------|
+| Haut | (0,0) -> (498,0) | 498 cm = 107 + 174 + 217 | Fenêtre 174 cm (de x=107 à x=281) |
+| Droite (haut) | (498,0) -> (498,406) | 406 cm = 170 + 83 + 153 | Porte 83 cm (de y=170 à y=253) |
+| Encoche horizontale | (498,406) -> (358,406) | 140 cm | - |
+| Encoche verticale | (358,406) -> (358,720) | 314 cm (≈ 230 mur + 80 porte) | Porte 80 cm (vers le bas, y=636→716) |
+| Bas | (358,720) -> (0,720) | 358 cm (≈ 360 mesuré) | Porte-fenêtre 165 cm |
+| Gauche | (0,720) -> (0,0) | 720 cm = 240 (mur vert) + 480 (mur blanc) | Porte-fenêtre 165 cm (section blanche, bas) |
+
+### Terrasse + jardin
+
+À gauche le **jardin** (470 large x **840** haut = 720 utilisable + 120 de roses) ; à droite la **terrasse** en L, haute de **600** (240 + 360). Le **massif de roses** (470 x 120) est **à l'intérieur** du plan, en haut à gauche (coin 1), et n'est pas praticable. Le jardin étant plus haut que la terrasse, il **déborde en bas** : ses coins bas descendent 240 cm sous le bas de la terrasse.
+
+Repère : origine = coin haut-gauche du jardin (haut du massif). Terrasse et jardin sont reliés le long de x = 0 (ouvert de y = 120 à y = 600).
+
+Zone praticable (`contour`, 10 sommets) = terrasse + jardin **sous** le massif :
+
+```
+(0,0) (300,0) (300,240) (960,240) (960,600) (0,600) (0,840) (-470,840) (-470,120) (0,120)
+```
+
+Contour visuel (`contourVisuel`, 8 sommets) — sert à numéroter les coins, coin 1 = roses :
+
+```
+(-470,0) (300,0) (300,240) (960,240) (960,600) (0,600) (0,840) (-470,840)
+```
+
+| Élément | Dimension | Note |
+|---------|-----------|------|
+| Jardin complet | 470 x 840 | Teinte vert clair (720 utile + 120 roses) |
+| Massif de roses | 470 x 120 | Coin 1, **dans** le plan, non praticable (hachuré « Rose 🌹 ») |
+| Jardin praticable | 470 x 720 | Sous le massif |
+| Terrasse | 600 de haut | 240 (coin 2→3) + 360 (coin 4→5) |
+| Maison (découpe) | 660 x 240 | Haut-droite, hors terrasse |
+| Bas terrasse | 960 | - |
+
+Teintes : jardin **vert clair**, terrasse **gris très clair**, grille par-dessus. Coins numérotés 1→8 en bleu foncé, à l'extérieur. Fonds (`fonds`) et massif (`zones`) peuvent déborder du contour ; le tracé en tient compte.
+
+### Plan global (superposition)
+
+Troisième plan du sélecteur : il **superpose** le salon et la terrasse+jardin. Assemblage : le **coin 6 du salon** (0,720) vient s'**emboîter** dans le **coin 3 de la terrasse** (300,240), c'est-à-dire dans l'angle « maison » de la terrasse. Le salon est donc **translaté de (300, −480)** et se loge dans la découpe maison, en débordant vers le haut.
+
+Ce plan est **construit par programme** à partir des deux autres (objet `PLANS.global`) : on **ne duplique pas** les cotes du salon/terrasse et on **ne modifie pas** les deux plans d'origine. Il définit `contours` = **deux pièces** praticables (terrasse + salon translaté) : une table est valide si elle tient dans l'une OU l'autre. (Côté assemblage, le coin 6 du salon s'emboîte dans le coin 3 de la terrasse.)
+
+**Numérotation des coins (plan global)** : les coins ne sont **plus préfixés par une lettre**. Ils sont numérotés en **continu (1, 2, 3...)** sur l'ensemble des blocs via `coinsContinus` (liste ordonnée : salon, reste-maison, terrasse+couloir, **rosier de droite**, entrée, reste-jardin, feuillages, **buissons**) et `dessinerCoinsContinus` : **chaque point physique reçoit un seul numéro unique** (les coins partagés entre deux blocs gardent le numéro du premier polygone qui les revendique, via un `Set` de positions déjà vues). But : pouvoir désigner sans ambiguïté « le coin N ». Une entrée de `coinsContinus` peut être un **polygone** OU un objet `{ poly, off }` (recul du numéro sur mesure) : le **rosier de droite** (sous l'entrée) est placé avant l'entrée/le feuillage avec un `off:30` serré pour que ses **4 coins (20→23)** encadrent ce petit bloc lisiblement. `dessinerCoinsContinus` accepte aussi un **`coinsOverride`** (`{ "x,y": [px,py] }`) qui **force la position** d'un numéro précis — utilisé pour rentrer le **coin 13** (960,440) dans la terrasse, le bloc Plant occupant sa place par défaut. Les autres zones décoratives (massif de roses de gauche, cerisiers) ne sont pas numérotées : on les désigne par leur nom.
+
+Libellés de zone en filigrane : **Salon, Terrasse** (casse normale, plus de majuscules), **Jardin Utilisable** (2 lignes), Reste Jardin. Les libellés bordeaux **Couloir / Dalle Terrasse** et **Entrée / Dalle / Terrasse** sont **passés à la ligne** et réduits pour tenir dans leur bloc. Un libellé `label` peut être une **chaîne** (1 ligne) ou un **tableau de chaînes** (plusieurs lignes, rendues en `<tspan>`).
+
+Cohérence vérifiée : la porte-fenêtre basse du salon (165) tombe pile sur la jonction salon/terrasse (passage intérieur → extérieur).
+
+**Couloir Dalle Terrasse** (plan global uniquement) : prolongement de **800 cm** vers la droite depuis le coin **T4** (960,240), **200 cm** de haut (et non 360 comme l'arête T4-T5). Coins : T4 (haut-gauche), (1760,240) haut-droite, (1760,440) bas-droite, (960,440) bas-gauche. Il est **fusionné** au contour de la terrasse (passage ouvert, sans mur entre les deux), teinté **bordeaux pastel** (`.fond--couloir`) et étiqueté. Tout est défini dans `PLANS.global` (objet construit par programme) ; `PLANS.terrasse` et `PLANS.salon` ne sont pas modifiés.
+
+**Reste de la maison** (plan global uniquement) : pour « fermer la maison », un mur part de **S2** (798,-480), file horizontalement jusqu'à **x = 1760** (bord droit du couloir), puis descend jusqu'au coin haut-droite du couloir (1760,240). La surface ainsi enfermée (à droite du salon, au-dessus du couloir) est **purement visuelle** : fond **blanc**, **non quadrillée**, **non praticable** (elle n'est pas dans `contours`, donc les tables y sont invalides). Mise en œuvre via un fond `maison-reste` (blanc), une liste `murs` (polylignes décoratives, fonction `dessinerMurs`) et une étiquette « Reste de la maison ».
+
+**Reste Jardin** (plan global uniquement) : tout le terrain **sous** les zones utilisables (jardin utilisable, terrasse, couloir, entrée). **Non praticable** comme « Reste de la maison » (pas dans `contours` → toute table y est invalide), mais cette fois **quadrillé** (on y placera roses / arbres ensuite) et teinté **vert foncé pastel** (`.fond--reste-jardin`). Tracé : on part du **coin bas-droite de l'Entrée Dalle Terrasse** (2160,510), on descend de **920 cm** → coin bas-droite (2160,1430) ; le **bas** mesure **2630 cm** = 470 (roses) + 300 (haut terrasse) + 660 + 800 (maison) + 400 (entrée) → coin bas-gauche (−470,1430), **aligné sur le côté gauche du jardin utilisable** (x=−470). Le **haut suit en escalier** les bas des zones utilisables : à gauche il « remonte » moins (jardin bas à 840) qu'à droite (entrée bas à 510) — on a plus de terrain à droite. **Toutes les arêtes forment des angles droits.** Mise en œuvre par un seul fond `{ type:"reste-jardin", grille:true, contour:true }` : le flag `grille` étend le `clipPath` de la grille à ce fond, `contour` le ferme par un trait (`dessinerContour`) dont les arêtes hautes se superposent aux bas des pièces utilisables. Le **bloc Jardin de gauche est renommé « Jardin Utilisable »** (étiquette sur 2 lignes) : c'est la surface du jardin **où l'on peut placer des tables**, à ne pas confondre avec « Reste Jardin ».
+
+**Éléments du jardin (plan global uniquement)** — décor non praticable posé *dans* le Reste Jardin :
+- **Massifs de roses** (`zones`, type `rose`, hachuré rose poudré, étiquette `🌹`). Outre le massif d'origine (haut-gauche, 470×120), un **second massif 70 (x) × 100 (y)** est posé **sous l'Entrée Dalle Terrasse**, son coin haut-droite confondu avec le coin bas-droite de l'entrée (2160,510) → `rect:[2090,510,70,100]`. L'étiquette du massif d'origine passe de « Rose 🌹 » à **« 🌹 »** (emoji seul).
+- **Feuillages** (`zones`, type `feuillage`, **hachuré grisé** `#hachures-feuillage`, étiquette grise) : zone **condamnée** au coin bas-droite du Reste Jardin. Rectangle de base [1650,980]→[2160,1430] (coin bas-droite confondu avec celui du Reste Jardin), **étendu vers le haut** par un **quadrilatère supplémentaire (QFS)** dont l'**arête haute épouse toute l'arête basse des roses sous l'entrée** ((2090,610)→(2160,610)) et l'arête basse l'ancien haut du feuillage ((1650,980)→(2160,980)). Contour fusionné = polygone à 5 sommets `points:[[1650,980],[2090,610],[2160,610],[2160,1430],[1650,1430]]` (le côté droit (2160,610)→(2160,1430) est une seule arête ; le point intermédiaire (2160,980) — un ancien coin numéroté devenu inutile — a été retiré). Une zone peut donc être **rectangulaire** (`rect:[x,y,w,h]`) **ou polygonale** (`points:[…]` + `labelXY` optionnel pour placer l'étiquette) — `dessinerZones` gère les deux.
+- **Buissons** (`zones`, type `buissons`, **même hachure grise** que le feuillage `#hachures-feuillage`) : grand bloc **sous le plan** (hors plan actuel), sur **toute la largeur** (2630, de −470 à 2160) et **300 cm** de profondeur (y 1430 → 1730) → `points:[[-470,1430],[2160,1430],[2160,1730],[-470,1730]]`. Ses 2 coins du haut sont les coins **28** (bas-gauche) et **27** (bas-droite) du Reste Jardin (inchangés) ; ses 2 coins du bas sont les **nouveaux coins 31** (bas-droite) et **32** (bas-gauche).
+- **Plant** (`zones`, type `plant`, **vert vif plein** `#5fb84e`, *pas* de hachure) : petit rectangle **320 × 120**, coin haut-gauche confondu avec le **coin 13** (960,440) → `rect:[960,440,320,120]`. **Pas de numéro de coin** (absent de `coinsContinus`). Comme il recouvre le placement par défaut du numéro 13, ce dernier est **rentré dans la terrasse** via `coinsOverride` (voir ci-dessous), et la cote « 360 cm » a été déplacée à gauche (x=905) pour ne pas être sous le bloc.
+- **Cerisiers** (`arbres`, type `cerisier`) : marqueurs ponctuels = disque clair + emoji `🍒` (`dessinerArbres`). **Grand cerisier** `r:100` posé depuis le coin bas-gauche du Feuillages (1650,1430) — 350 cm sur x (vers la gauche, jardin ouvert) + 210 cm vers le haut → (1300,1220). **Petit cerisier** `r:65` posé depuis le coin bas-gauche du Reste Jardin (−470,1430) — 220 cm à droite + 140 cm vers le haut → (−250,1290).
+
+- **Points / repères** (`points`, `dessinerPoints`, **distinct des `arbres`**) — chaque entrée peut combiner : un **disque central** (si `r` fourni, `.point--*`), un **halo** (`rayon` → grand cercle translucide `.point-halo--*` ; avec `demi:"bas"` ce n'est que le **demi-disque inférieur**, tracé en `<path>` : arc du bas refermé par le diamètre), et une **étiquette** (`label`/`labelXY`, rendue avec les classes de zone `zone-label zone-label--*` pour réutiliser leur style). Tout est en `pointer-events:none`. Instance actuelle : un **demi-cercle vert « Plant »** (type `plant`, `.point-halo--plant`) centré **180 cm à gauche du coin 12** → (1580,440), `rayon:210`, **sans disque central**, étiquette « Plant » identique à celle du bloc Plant.
+
+Le motif de hachures `motifHachures(id, fond, trait)` est **paramétré** (décliné en `hachures-rose` et `hachures-feuillage`). Les étiquettes de zone reçoivent une classe par type (`zone-label--rose`, `zone-label--feuillage`). Les `arbres` sont **purement décoratifs** (ils n'entrent pas dans `tableValide`).
+
+## Hypothèses retenues (cotes ambiguës)
+
+Consigne suivie : quand une cote est ambiguë, choisir l'interprétation qui **ferme la forme proprement** et la documenter.
+
+1. **Mur gauche du salon = 720 cm = 240 (mur vert) + 480 (mur blanc).** Les deux annotations s'**additionnent** (le 480 n'est pas le total du mur). La porte-fenêtre de 165 cm est dans la section blanche (basse).
+2. **Côté droit du salon = 406 + 310 ≈ 716 ≈ 720**, ce qui ferme le L face au mur gauche (720). Détail : mur droit haut 406 (170 + porte 83 + 153) ; encoche verticale = 230 (du seuil de la porte jusqu'au coin du L) + porte 80, soit ≈ 310.
+3. **Encoche verticale modélisée à 314 cm** (au lieu de 310) pour fermer exactement face au mur gauche de 720 (arrondi de 4 cm, sans impact pratique).
+4. **Mur bas du salon = 358 cm** plutôt que 360, pour que largeur haut (498) = encoche (140) + bas (358). Écart de 2 cm.
+5. **Positions des ouvertures du salon** : la fenêtre haute et la porte droite sont bien cotées ; les porte-fenêtres (bas et gauche) sont **approximatives**, à ajuster dans `PLANS` (`app.js`) si besoin.
+6. **Terrasse** : la forme ferme exactement (300 + 660 = 960 en largeur ; 240 + 360 = 600 en hauteur), aucune correction nécessaire.
+7. **Jardin** (croquis IMG_0813) : jardin = **470 x 840** (720 utilisable + **120 de roses en haut, à l'intérieur** du plan, coin 1). Terrasse = **600** (240 + 360). Le jardin déborde donc **sous** la terrasse de 240 cm : ses coins bas (7 et 8) ne sont pas à la même hauteur que ceux de la terrasse (coin 5). Massif de roses hachuré, non praticable.
+
+## L'app
+
+Trois fichiers, HTML/CSS/JS natifs, **aucun framework, aucun build** : `index.html` + `style.css` + `app.js`. Ouvrable par double-clic.
+
+### Fonctions attendues
+
+- Plan dessiné **à l'échelle en SVG** : contour en L (`<polygon>`), grille légère, cotes affichées. **Mise en page plein écran** : l'app tient dans la fenêtre (pas de scroll de page sur desktop, `body{overflow:hidden}`).
+- **Zoom du plan** : un curseur `#rng-zoom` (au-dessus de « Ajouter une table », 100→400 %) pilote `settings.zoom`. `appliquerZoom()` fixe la **taille px du SVG = (zone de `.scene`) × zoom** (largeur ET hauteur explicites : sinon le SVG, élément remplacé, déduit sa hauteur du `viewBox` et **déborde sous Safari**). À zoom 1 il remplit `.scene` (`overflow:hidden`, aucun scroll) ; au-delà il déborde et `.scene` passe en `overflow:auto` → **on ne scrolle que dans le cadre du plan**. Appelé au démarrage, sur `input` du curseur et au `resize` (pas dans `render()`, pour ne pas thrasher pendant un drag). Sur mobile (`max-width:760px`) `.scene` a une **hauteur définie** (`height:60vh`, pas `flex:1`) — sinon sa taille dépendrait du SVG qu'`appliquerZoom` dimensionne à partir d'elle (boucle).
+- Fenêtres et portes-fenêtres **marquées visuellement** (pour ne pas les bloquer).
+- Bouton **« Ajouter une table »** ; chaque table déplaçable souris + tactile via **Pointer Events** (`pointerdown` / `pointermove` / `pointerup` + `setPointerCapture`), pas l'API `draggable`.
+- **Collision** : table **rouge** si elle sort d'un mur ou chevauche une autre table (marges incluses), **verte/bleue** sinon.
+- **Réglages** : diamètre de table, espace pour les chaises (dégagement réservé autour de **chaque** table ; l'écart entre deux tables vaut donc 2 x cette valeur), espace table/mur.
+- **Compteur** : tables valides + couverts estimés (≈ 8 pour 150 cm, ≈ 10 pour 180 cm).
+- **Sélecteur de plan** : salon / terrasse+jardin / plan global (superposition).
+- **Rectangles libres** (buffet, scène, bar, DJ…) : bouton « Ajouter un rectangle », déplaçable (Pointer Events) et **redimensionnable** (poignée coin bas-droit ou champs largeur/hauteur). Chacun a un **titre** et une **couleur pastel** parmi 5 (Lavande, Jaune, Pêche, Ciel, Menthe), couleurs non utilisées ailleurs sur le plan. Les dimensions s'affichent dans le rectangle. (Repères visuels : pas de collision avec les tables pour l'instant.)
+
+### Architecture du code (pour étendre facilement)
+
+- **Sources de vérité** : `tables` (chaque table = `{ id, planId, x, y }`) et `rectangles` (`{ id, planId, x, y, w, h, titre, couleur }`). La sélection courante est un objet `selection = { type:"table"|"rect", id }`.
+- Une fonction **`render()`** rappelée après **chaque** modification (ajout, déplacement, redimensionnement, changement de réglage, changement de plan). Le DOM est un reflet de l'état, jamais l'inverse.
+- Les plans sont des **données** (objet `PLANS` : polygone + ouvertures), pour ajouter/corriger un plan sans toucher à la logique. Un plan peut avoir **plusieurs pièces** (`contours`) : le « plan global » s'en sert pour superposer salon et terrasse.
+- Code commenté en **français**.
+
+### Extensions prévues (plus tard)
+
+Rotation des tables, sauvegarde (localStorage / export JSON), tables rectangulaires, numérotation et noms de tables, export image/PDF du plan.

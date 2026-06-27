@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plan du mariage — placement des tables</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="entete">
+    <h1>Plan du mariage</h1>
+    <div class="entete__plan">
+      <label for="select-plan">Plan</label>
+      <select id="select-plan"></select>
+    </div>
+  </header>
+
+  <main class="appli">
+
+    <!-- Panneau latéral : actions, réglages, compteur, légende -->
+    <aside class="panneau">
+
+      <section class="reglage reglage--zoom">
+        <label for="rng-zoom">Zoom du plan : <strong id="val-zoom">100</strong> %</label>
+        <input type="range" id="rng-zoom" min="100" max="400" step="10" value="100">
+      </section>
+
+      <div class="bloc-actions">
+        <button id="btn-ajouter" class="btn btn--principal">+ Ajouter une table</button>
+        <button id="btn-ajouter-rect" class="btn btn--rect">+ Ajouter un rectangle</button>
+        <button id="btn-supprimer" class="btn btn--secondaire" disabled>Supprimer la sélection</button>
+      </div>
+
+      <!-- Éditeur de rectangle : affiché quand un rectangle est sélectionné -->
+      <section id="editeur-rect" class="editeur" hidden>
+        <h2>Rectangle</h2>
+        <label class="champ">Titre
+          <input type="text" id="rect-titre" maxlength="24" placeholder="ex. Buffet, Scène, Bar…">
+        </label>
+        <div class="champ-dims">
+          <label>Largeur <input type="number" id="rect-w" min="40" step="10"> cm</label>
+          <label>Hauteur <input type="number" id="rect-h" min="40" step="10"> cm</label>
+        </div>
+        <div class="champ">Couleur
+          <div class="couleurs" id="rect-couleurs"></div>
+        </div>
+        <button id="rect-suppr" class="btn btn--secondaire">Supprimer ce rectangle</button>
+      </section>
+
+      <section class="reglage">
+        <label for="rng-diametre">Diamètre des tables : <strong id="val-diametre"></strong> cm</label>
+        <input type="range" id="rng-diametre" min="100" max="240" step="10">
+      </section>
+
+      <section class="reglage">
+        <label for="rng-espace-chaises">Espace pour les chaises <span class="reglage__hint">(autour de chaque table)</span> : <strong id="val-espace-chaises"></strong> cm</label>
+        <input type="range" id="rng-espace-chaises" min="0" max="100" step="5">
+      </section>
+
+      <section class="reglage">
+        <label for="rng-espace-mur">Espace table / mur : <strong id="val-espace-mur"></strong> cm</label>
+        <input type="range" id="rng-espace-mur" min="0" max="150" step="5">
+      </section>
+
+      <section class="compteur">
+        <div class="compteur__ligne"><span id="nb-tables" class="compteur__chiffre">0</span> table(s) valide(s)</div>
+        <div class="compteur__ligne"><span id="nb-couverts" class="compteur__chiffre">0</span> couverts estimés</div>
+      </section>
+
+      <section class="legende">
+        <h2>Légende</h2>
+        <ul>
+          <li><span class="pastille pastille--valide"></span> Table valide</li>
+          <li><span class="pastille pastille--select"></span> Table sélectionnée</li>
+          <li><span class="pastille pastille--invalide"></span> Table en conflit</li>
+          <li><span class="trait trait--fenetre"></span> Fenêtre</li>
+          <li><span class="trait trait--pf"></span> Porte-fenêtre</li>
+          <li><span class="trait trait--porte"></span> Porte</li>
+        </ul>
+        <p class="aide">Glissez une table à la souris ou au doigt. Évitez de bloquer les ouvertures (traits colorés). Touche Suppr pour effacer la table sélectionnée.</p>
+      </section>
+
+    </aside>
+
+    <!-- Zone de dessin : le SVG est rempli par render() dans app.js -->
+    <div class="scene">
+      <svg id="plan" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

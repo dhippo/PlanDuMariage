@@ -1,0 +1,331 @@
+/* =========================================================================
+   Plan du mariage — feuille de style
+   Palette douce (crème / sauge / rose poudré) pour un rendu "mariage".
+   ========================================================================= */
+
+:root{
+  --creme:        #faf7f1;
+  --creme-fonce:  #f0ead8;
+  --encre:        #3a3631;
+  --sauge:        #7fa07a;
+  --sauge-fonce:  #5f7e5b;
+  --rose:         #c98b96;
+  --gris-doux:    #8a8275;
+
+  /* couleurs des états de table */
+  --tbl-valide:   #9bce9b;  --tbl-valide-bord:   #3f8f3f;
+  --tbl-select:   #7fb2f0;  --tbl-select-bord:   #2f6fb0;
+  --tbl-invalide: #ef9a9a;  --tbl-invalide-bord: #c62828;
+
+  /* couleurs des ouvertures */
+  --c-fenetre:    #2f6fb0;
+  --c-pf:         #159a8a;
+  --c-porte:      #d98a2b;
+  --c-maison:     #b9b2a4;
+}
+
+*{ box-sizing:border-box; }
+
+html,body{ height:100%; margin:0; }
+
+body{
+  display:flex;
+  flex-direction:column;
+  font-family:"Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color:var(--encre);
+  background:var(--creme);
+  overflow:hidden;        /* l'app tient dans la fenêtre : aucun scroll de page */
+}
+
+/* ----------------------------- En-tête -------------------------------- */
+
+.entete{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 22px;
+  background:#fff;
+  border-bottom:1px solid #e7e0d4;
+  box-shadow:0 1px 4px rgba(0,0,0,.04);
+}
+.entete h1{
+  margin:0;
+  font-size:20px;
+  font-weight:600;
+  letter-spacing:.3px;
+  color:var(--sauge-fonce);
+}
+.entete__plan{ display:flex; align-items:center; gap:8px; }
+.entete__plan label{ font-size:14px; color:var(--gris-doux); }
+.entete__plan select{
+  padding:6px 10px;
+  border:1px solid #d6cdbd;
+  border-radius:8px;
+  background:var(--creme);
+  font-size:14px;
+  color:var(--encre);
+  cursor:pointer;
+}
+
+/* ----------------------- Disposition générale ------------------------- */
+
+.appli{
+  flex:1;
+  display:flex;
+  min-height:0;          /* indispensable pour que .scene puisse rétrécir */
+}
+
+/* ----------------------------- Panneau -------------------------------- */
+
+.panneau{
+  width:290px;
+  flex-shrink:0;
+  padding:18px;
+  overflow-y:auto;
+  background:var(--creme);
+  border-right:1px solid #e7e0d4;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.bloc-actions{ display:flex; flex-direction:column; gap:8px; }
+
+.btn{
+  padding:11px 14px;
+  border:none;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:filter .15s, opacity .15s;
+}
+.btn:hover{ filter:brightness(1.05); }
+.btn--principal{ background:var(--sauge); color:#fff; }
+.btn--secondaire{ background:#efe7da; color:var(--encre); }
+.btn--rect{ background:#c9b8e8; color:#3a2f55; }
+.btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+/* Éditeur de rectangle */
+.editeur{
+  background:#fff;
+  border:1px solid #e7e0d4;
+  border-radius:12px;
+  padding:14px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.editeur h2{ font-size:14px; margin:0; color:var(--encre); }
+.champ{ display:flex; flex-direction:column; gap:6px; font-size:13px; color:var(--gris-doux); }
+.champ input[type=text]{ padding:7px 9px; border:1px solid #d6cdbd; border-radius:8px; font-size:14px; }
+.champ-dims{ display:flex; gap:10px; }
+.champ-dims label{ flex:1; display:flex; flex-direction:column; gap:4px; font-size:12px; color:var(--gris-doux); }
+.champ-dims input{ width:100%; padding:6px 8px; border:1px solid #d6cdbd; border-radius:8px; font-size:14px; }
+.couleurs{ display:flex; gap:8px; margin-top:2px; }
+.pastille-couleur{
+  width:30px; height:30px; border-radius:50%;
+  border:2px solid; padding:0; cursor:pointer; transition:transform .1s;
+}
+.pastille-couleur:hover{ transform:scale(1.12); }
+.pastille-couleur.active{ outline:3px solid var(--sauge-fonce); outline-offset:2px; }
+
+.reglage{ display:flex; flex-direction:column; gap:6px; }
+.reglage label{ font-size:13px; color:var(--gris-doux); }
+.reglage strong{ color:var(--encre); }
+.reglage__hint{ font-size:11px; color:#a79f90; }
+.reglage input[type=range]{ width:100%; accent-color:var(--sauge); cursor:pointer; }
+
+.compteur{
+  background:#fff;
+  border:1px solid #e7e0d4;
+  border-radius:12px;
+  padding:14px 16px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.compteur__ligne{ font-size:14px; color:var(--gris-doux); }
+.compteur__chiffre{
+  font-size:22px;
+  font-weight:700;
+  color:var(--sauge-fonce);
+  margin-right:4px;
+}
+
+.legende h2{ font-size:14px; margin:0 0 8px; color:var(--encre); }
+.legende ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+.legende li{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--gris-doux); }
+.pastille{ width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+.pastille--valide{   background:var(--tbl-valide);   border:2px solid var(--tbl-valide-bord); }
+.pastille--select{   background:var(--tbl-select);   border:2px solid var(--tbl-select-bord); }
+.pastille--invalide{ background:var(--tbl-invalide); border:2px solid var(--tbl-invalide-bord); }
+.trait{ width:18px; height:0; border-top-width:4px; border-top-style:solid; flex-shrink:0; }
+.trait--fenetre{ border-top-color:var(--c-fenetre); }
+.trait--pf{      border-top-color:var(--c-pf); }
+.trait--porte{   border-top-color:var(--c-porte); }
+.aide{ margin-top:12px; font-size:12px; line-height:1.5; color:#a79f90; }
+
+/* ------------------------------ Scène --------------------------------- */
+
+.scene{
+  flex:1;
+  min-width:0;
+  min-height:0;
+  padding:16px;
+  position:relative;          /* ancre le SVG en absolu (taille définie par .scene) */
+  overflow:hidden;
+}
+
+#plan{
+  display:block;
+  /* Taille (largeur ET hauteur) fixée en px par appliquerZoom() = zone de
+     .scene x le zoom. Les DEUX dimensions explicites : sinon le SVG (élément
+     remplacé) déduit sa hauteur du viewBox et déborde sous Safari. À zoom=1 il
+     remplit .scene ; au-delà il déborde et .scene devient scrollable. */
+  background:#fff;
+  border:1px solid #e7e0d4;
+  border-radius:12px;
+  touch-action:none;          /* le doigt déplace une table, pas la page */
+}
+
+/* --------------------- Styles des éléments SVG ------------------------ */
+/* (la plupart sont décoratifs : on coupe leur capture du pointeur) */
+
+/* Grille translucide : lisible sur la crème, le vert et le gris des fonds. */
+.grille{ stroke:rgba(90,86,78,.13); stroke-width:1; pointer-events:none; }
+.grille--fort{ stroke:rgba(90,86,78,.20); stroke-width:1.4; }
+
+.piece-fond{ fill:#fffdf9; }                 /* salon : crème */
+.fond--salon{ fill:#fffdf9; }                /* salon (plan global) : crème */
+.fond--jardin{ fill:#e7f3e1; }               /* jardin utilisable : vert clair */
+.fond--reste-jardin{ fill:#9cc090; }         /* reste du jardin : vert foncé pastel (quadrillé, non praticable) */
+.fond--terrasse{ fill:#f0f0f2; }             /* terrasse : gris très clair */
+.fond--couloir{ fill:#d8a7b6; }              /* couloir dalle terrasse : bordeaux pastel */
+.fond--entree{ fill:#d8a7b6; }               /* entrée dalle terrasse : bordeaux pastel */
+.fond--maison-reste{ fill:#ffffff; }         /* reste de la maison : blanc (non quadrillé) */
+.piece-contour{ fill:none; stroke:var(--encre); stroke-width:5; stroke-linejoin:miter; pointer-events:none; }
+.mur{ fill:none; stroke:var(--encre); stroke-width:5; stroke-linejoin:miter; stroke-linecap:square; pointer-events:none; }
+
+/* Zones non praticables (massif de roses, feuillages, etc.) */
+.zone--rose{ fill:url(#hachures-rose); stroke:#d98aa6; stroke-width:2; }
+.zone--feuillage{ fill:url(#hachures-feuillage); stroke:#9a9a93; stroke-width:2; }
+.zone--buissons{ fill:url(#hachures-feuillage); stroke:#9a9a93; stroke-width:2; }   /* même hachure grise que feuillage */
+.zone--plant{ fill:#5fb84e; stroke:#3f8a2f; stroke-width:2; }                        /* bloc "Plant" : vert vif (différent) */
+.zone-label{
+  font-size:38px;
+  font-weight:600;
+  font-family:inherit;
+  pointer-events:none;
+  user-select:none;
+}
+.zone-label--rose{      fill:#b3567a; }      /* étiquette des massifs de roses */
+.zone-label--feuillage{ fill:#6f6f68; }      /* étiquette des feuillages (grisé) */
+.zone-label--buissons{  fill:#6f6f68; }      /* étiquette des buissons (grisé) */
+.zone-label--plant{     fill:#1f4715; }      /* étiquette Plant (vert foncé) */
+
+/* Arbres / marqueurs ponctuels (cerisiers...) */
+.arbre{ stroke-width:3; }
+.arbre--cerisier{ fill:#fdeef1; stroke:#5f7e5b; }   /* disque clair, bord vert */
+.arbre--vert{ fill:#4f8f3f; stroke:#356b2a; }        /* petit arbre : pastille verte pleine */
+.arbre--orange{ fill:#fbe0c2; stroke:#d28a3c; }      /* arbre automne : disque orange clair (+ 🍂) */
+.arbre-emoji{ font-family:inherit; pointer-events:none; user-select:none; }
+
+/* Points fixes (repères ponctuels) */
+.point{ stroke-width:2.5; pointer-events:none; }
+.point--bleu{ fill:#2f6fb0; stroke:#1c4a7d; }        /* point fixe bleu */
+.point-halo{ pointer-events:none; }
+.point-halo--bleu{ fill:rgba(47,111,176,.09); stroke:rgba(47,111,176,.30); stroke-width:1.5; }  /* cercle 210 cm bleu très translucide */
+.point-halo--plant{ fill:rgba(95,184,78,.20); stroke:#3f8a2f; stroke-width:2; }                 /* demi-cercle vert "Plant" translucide */
+
+.cote{
+  fill:var(--gris-doux);
+  font-size:17px;
+  font-family:inherit;
+  pointer-events:none;
+  user-select:none;
+}
+
+/* Libellés de zones (SALON / TERRASSE / JARDIN) en filigrane. */
+.etiquette{
+  fill:rgba(70,70,78,.16);
+  font-size:72px;
+  font-weight:800;
+  letter-spacing:3px;
+  font-family:inherit;
+  pointer-events:none;
+  user-select:none;
+}
+
+/* Numéros des coins : bleu foncé, gras, à l'extérieur du plan (halo blanc). */
+.coin{
+  fill:#14387d;
+  font-size:33px;
+  font-weight:800;
+  font-family:inherit;
+  paint-order:stroke;
+  stroke:#ffffff;
+  stroke-width:3;
+  pointer-events:none;
+  user-select:none;
+}
+
+.ouverture{ stroke-width:8; pointer-events:none; stroke-linecap:butt; }
+.ouverture--fenetre{ stroke:var(--c-fenetre); }
+.ouverture--porte-fenetre{ stroke:var(--c-pf); }
+.ouverture--porte{ stroke:var(--c-porte); }
+.ouverture--maison{ stroke:var(--c-maison); stroke-width:5; stroke-dasharray:10 8; }
+.ouverture-label{
+  fill:var(--gris-doux);
+  font-size:13px;
+  font-family:inherit;
+  pointer-events:none;
+  user-select:none;
+}
+
+.degagement{
+  fill:rgba(120,160,255,.05);
+  stroke:#c4cfe8;
+  stroke-width:1;
+  stroke-dasharray:4 5;
+  pointer-events:none;
+}
+
+.table{ stroke-width:2.5; cursor:grab; }
+.table--valide{   fill:var(--tbl-valide);   stroke:var(--tbl-valide-bord); }
+.table--select{   fill:var(--tbl-select);   stroke:var(--tbl-select-bord); }
+.table--invalide{ fill:var(--tbl-invalide); stroke:var(--tbl-invalide-bord); }
+
+.table-num{
+  fill:#2a2a2a;
+  font-size:30px;
+  font-weight:700;
+  font-family:inherit;
+  pointer-events:none;
+  user-select:none;
+}
+
+/* Rectangles libres (buffet, scène, bar...) */
+.rect{ stroke-width:2.5; cursor:grab; }
+.rect--select{ stroke-width:4.5; }
+.rect-titre{
+  fill:#2f2b25; font-size:30px; font-weight:700; font-family:inherit;
+  pointer-events:none; user-select:none;
+}
+.rect-dim{
+  fill:#6b6457; font-size:20px; font-family:inherit;
+  pointer-events:none; user-select:none;
+}
+.rect-poignee{ fill:#fff; stroke:#2f6fb0; stroke-width:3; cursor:nwse-resize; }
+
+/* ------------------------- Petit écran -------------------------------- */
+
+@media (max-width:760px){
+  html,body{ height:auto; }
+  body{ overflow:auto; }       /* sur mobile, la page empile et peut défiler */
+  .appli{ flex-direction:column; }
+  .panneau{ width:100%; border-right:none; border-bottom:1px solid #e7e0d4; }
+  /* hauteur DÉFINIE (pas flex-grow) : sinon la taille de .scene dépendrait du
+     SVG que appliquerZoom() dimensionne à partir de .scene -> boucle. */
+  .scene{ flex:none; height:60vh; }
+}
