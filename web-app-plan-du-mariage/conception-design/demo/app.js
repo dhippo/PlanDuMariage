@@ -80,7 +80,7 @@ const PLANS = {
     // Massif de roses : INTÉRIEUR au jardin, en haut (470 x 120), non praticable.
     // [x, y, largeur, hauteur] en cm. Hors du contour praticable => tables KO.
     zones: [
-      { type:"rose", label:"Rosiers", rect:[-470,0,470,120] },
+      { type:"rose", label:"🌹", rect:[-470,0,470,120] },
     ],
     // Cotes affichées manuellement (plus lisible que l'auto sur formes fusionnées).
     cotes: [
@@ -237,7 +237,7 @@ PLANS.global = (function(){
       ...t.zones,                              // massif de roses (haut-gauche)
       // Rosier de droite SOUS l'Entrée Dalle Terrasse (70 x 100) : ses 4 coins
       // sont numérotés (cf. coinsContinus).
-      { type:"rose", label:"Rosiers", rect:roseDroite },
+      { type:"rose", label:"🌹", rect:roseDroite },
       // "Feuillages" : zone CONDAMNÉE (hachuré grisé) au coin bas-droite du
       // Reste Jardin, étendue vers le haut par le "trait" (pentagone). Étiquette
       // placée dans le corps rectangulaire (et non au centroïde, tiré vers le haut).
@@ -252,10 +252,10 @@ PLANS.global = (function(){
       // Grand cerisier : repéré depuis le coin bas-gauche du Feuillages
       // (1650,1430) — 350 cm sur x (vers le jardin ouvert, à GAUCHE du bloc) et
       // 210 cm vers le haut => (1300,1220).
-      { type:"cerisier", x:1300, y:1220, r:50 },
+      { type:"cerisier", emoji:"🍒", x:1300, y:1220, r:50 },
       // Petit cerisier : repéré depuis le coin bas-gauche du Reste Jardin
       // (-470,1430) — 220 cm à droite et 140 cm vers le haut => (-250,1290).
-      { type:"cerisier", x:-250, y:1290, r:32.5 },
+      { type:"cerisier", emoji:"🍒", x:-250, y:1290, r:32.5 },
       // Petit arbre (pastille verte, sans emoji, taille du petit cerisier) :
       // depuis le coin 30 (1650,1430) — 180 cm à gauche, 50 cm en haut => (1470,1380).
       { type:"vert", x:1470, y:1380, r:16.25 },
@@ -269,9 +269,9 @@ PLANS.global = (function(){
       // Arbre (pastille verte) : depuis le coin 28 — 1410 cm à droite, 130 cm
       // vers le haut => (940,1300).
       { type:"vert", x:940, y:1300, r:16.25 },
-      // Arbre automne (disque orange, sobre, sans emoji) : depuis le coin 28 — 1520 cm à
+      // Arbre automne (disque orange + 🍂) : depuis le coin 28 — 1520 cm à
       // droite, 50 cm vers le haut => (1050,1380).
-      { type:"orange", x:1050, y:1380, r:32.5 },
+      { type:"orange", emoji:"🍂", x:1050, y:1380, r:32.5 },
     ],
     points: [
       // Demi-cercle "Plant" : centré 180 cm à gauche du coin 12 (1760,440) =>
@@ -328,15 +328,14 @@ let idSuivant     = 1;       // numérotation des tables
 let idSuivantRect = 1;       // numérotation des rectangles
 let selection     = null;    // { type:"table"|"rect", id } ou null
 
-// 5 teintes coordonnées à la palette « Atelier Floral » (non utilisées ailleurs
-// sur le plan) pour les rectangles libres (buffet, scène, bar...).
-// { fond, bord } par couleur.
+// 5 couleurs pastel claires (non utilisées ailleurs sur le plan) pour les
+// rectangles libres (buffet, scène, bar...). { fond, bord } par couleur.
 const COULEURS_RECT = [
-  { nom:"Lin",        fond:"#E7E0D2", bord:"#C2B189" },
-  { nom:"Sauge",      fond:"#D9E0CC", bord:"#8AA277" },
-  { nom:"Terracotta", fond:"#ECD7CF", bord:"#C49A8F" },
-  { nom:"Eucalyptus", fond:"#DCE6E6", bord:"#8FAAAC" },
-  { nom:"Miel",       fond:"#F1E3C5", bord:"#C9A24B" },
+  { nom:"Lavande", fond:"#e3d7f4", bord:"#9b86c9" },
+  { nom:"Jaune",   fond:"#f7eeb2", bord:"#c9b34a" },
+  { nom:"Pêche",   fond:"#fcdcc4", bord:"#e0a071" },
+  { nom:"Ciel",    fond:"#d5e6f7", bord:"#7fa8d4" },
+  { nom:"Menthe",  fond:"#d4ecdd", bord:"#7bbf95" },
 ];
 
 const settings = {
@@ -511,8 +510,8 @@ function render(){
   for(const f of (plan.fonds || []))
     if(f.grille) clip.appendChild(el("polygon", { points: f.points.map(p => p.join(",")).join(" ") }));
   defs.appendChild(clip);
-  defs.appendChild(motifHachures("hachures-rose",      "#EFE0DA", "#C49A8F")); // roses (rose poudré — Atelier Floral)
-  defs.appendChild(motifHachures("hachures-feuillage", "#E5E7DD", "#9AA38C")); // feuillages (sauge grisé)
+  defs.appendChild(motifHachures("hachures-rose",      "#f8dde6", "#d98aa6")); // roses (rose poudré)
+  defs.appendChild(motifHachures("hachures-feuillage", "#e3e3e0", "#9a9a93")); // feuillages (grisé)
   svg.appendChild(defs);
 
   dessinerFonds(plan);                    // teintes (crème / vert / gris)

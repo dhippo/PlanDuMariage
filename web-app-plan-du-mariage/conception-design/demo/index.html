@@ -9,19 +9,7 @@
 <body>
 
   <header class="entete">
-    <div class="entete__brand">
-      <span class="marque" aria-hidden="true">
-        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="20" cy="20" r="15" fill="none" stroke="#5C6B57" stroke-width="1.5"/>
-          <path d="M20 7.5 C 21.8 14, 21.8 26, 20 32.5" fill="none" stroke="#5C6B57" stroke-width="1.3" stroke-linecap="round"/>
-          <path d="M20 13.5 C 23 12.4, 25.6 12.6, 27.4 10.6 C 24.2 10.2, 21.4 11, 20 13.5 Z" fill="#8DA17C"/>
-          <path d="M20 20 C 17 18.9, 14.4 19.1, 12.6 17.1 C 15.8 16.7, 18.6 17.5, 20 20 Z" fill="#8DA17C"/>
-          <path d="M20 26.5 C 23 25.4, 25.6 25.6, 27.4 23.6 C 24.2 23.2, 21.4 24, 20 26.5 Z" fill="#A7B898"/>
-          <circle cx="20" cy="20" r="1.7" fill="#B8923C"/>
-        </svg>
-      </span>
-      <h1>Plan du mariage</h1>
-    </div>
+    <h1>Plan du mariage</h1>
     <div class="entete__plan">
       <label for="select-plan">Plan</label>
       <select id="select-plan"></select>
@@ -39,18 +27,9 @@
       </section>
 
       <div class="bloc-actions">
-        <button id="btn-ajouter" class="btn btn--principal">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.2"/><path d="M12 8.6v6.8M8.6 12h6.8"/></svg>
-          <span>Ajouter une table</span>
-        </button>
-        <button id="btn-ajouter-rect" class="btn btn--rect">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="1.6"/><path d="M8.5 12h7"/></svg>
-          <span>Ajouter un rectangle</span>
-        </button>
-        <button id="btn-supprimer" class="btn btn--secondaire" disabled>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l.9 12.2a1 1 0 0 0 1 .8h7.2a1 1 0 0 0 1-.8L17.5 7"/></svg>
-          <span>Supprimer la sélection</span>
-        </button>
+        <button id="btn-ajouter" class="btn btn--principal">+ Ajouter une table</button>
+        <button id="btn-ajouter-rect" class="btn btn--rect">+ Ajouter un rectangle</button>
+        <button id="btn-supprimer" class="btn btn--secondaire" disabled>Supprimer la sélection</button>
       </div>
 
       <!-- Éditeur de rectangle : affiché quand un rectangle est sélectionné -->
@@ -66,10 +45,7 @@
         <div class="champ">Couleur
           <div class="couleurs" id="rect-couleurs"></div>
         </div>
-        <button id="rect-suppr" class="btn btn--secondaire">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l.9 12.2a1 1 0 0 0 1 .8h7.2a1 1 0 0 0 1-.8L17.5 7"/></svg>
-          <span>Supprimer ce rectangle</span>
-        </button>
+        <button id="rect-suppr" class="btn btn--secondaire">Supprimer ce rectangle</button>
       </section>
 
       <section class="reglage">
@@ -115,5 +91,6 @@
   </main>
 
   <script src="app.js"></script>
+  <script src="demo.js"></script>
 </body>
 </html>
