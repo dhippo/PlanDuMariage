@@ -1,0 +1,71 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposition 3 — Cyanotype</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+:root{--cyan:#54C6F0;--teal:#4FD0A6;--ink:#D3E0F2;--ink2:#92A6C6;--bg:#0E1626;--line:#25344E}
+*{margin:0;box-sizing:border-box}
+body{font-family:"IBM Plex Sans",sans-serif;color:var(--ink);background:
+  linear-gradient(rgba(120,200,240,.04) 1px,transparent 1px) 0 0/30px 30px,
+  linear-gradient(90deg,rgba(120,200,240,.04) 1px,transparent 1px) 0 0/30px 30px,
+  radial-gradient(900px 500px at 78% -8%,#14294a,var(--bg));line-height:1.6;padding:0 0 80px}
+header{padding:54px 7vw 38px;background:#0B1322;border-bottom:1px solid var(--line)}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan)}
+h1{font-family:"IBM Plex Mono",monospace;font-size:46px;font-weight:600;letter-spacing:.03em;line-height:1.05;margin:12px 0 10px}
+h1 span{color:var(--cyan)}
+.lead{font-size:16.5px;color:var(--ink2);max-width:700px}
+main{padding:0 7vw}section{margin-top:50px}
+h2{font-family:"IBM Plex Mono",monospace;font-size:18px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:18px;color:var(--ink)}
+.logo-band{display:flex;justify-content:center;background:#0B1322;border:1px solid var(--line);border-radius:10px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.logo-band img{max-width:600px;width:100%;border-radius:8px}
+figure{margin:0}figure img{width:100%;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.45);display:block}
+figcaption{font-size:13px;color:var(--ink2);margin-top:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.sw{border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#121E33}
+.sw .c{height:60px}.sw .t{padding:9px 11px;font-size:12px}
+.sw .t b{display:block;font-size:13px}.sw .t span{color:var(--ink2);font-family:"IBM Plex Mono",monospace}
+.choices{columns:2;column-gap:34px}
+.choices li{margin:0 0 11px;break-inside:avoid;font-size:14.5px;color:var(--ink2);list-style:none;padding-left:22px;position:relative}
+.choices li::before{content:"";position:absolute;left:0;top:8px;width:8px;height:8px;border:1.5px solid var(--cyan);border-radius:50%}
+.choices b{color:var(--ink)}
+.cta{display:inline-block;margin-top:16px;background:var(--cyan);color:#06243B;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:6px;box-shadow:0 6px 18px rgba(31,92,132,.5)}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}.choices{columns:1}h1{font-size:34px}}
+</style></head>
+<body>
+<header>
+  <div class="kicker">Proposition 3 · Refonte visuelle</div>
+  <h1>CYANO<span>TYPE</span></h1>
+  <p class="lead">Direction architecturale et technique : table à dessin numérique. Fond ardoise,
+  traits cyan lumineux, cotes monospace. Le plan se lit comme le calque bleu d'un architecte.</p>
+  <a class="cta" href="demo/index.html">▶ Ouvrir la démo interactive</a>
+</header>
+<main>
+  <section><h2>Logo</h2><div class="logo-band"><img src="logo-PlanDuMariage.png" alt="Logo"></div></section>
+  <section><h2>Aperçu — Plan global (desktop)</h2>
+    <figure><img src="screenshot-desktop-global.png" alt="Desktop global">
+      <figcaption>Linework cyan sur fond bleu de Prusse, cotes monospace, conflit en rouge néon.</figcaption></figure></section>
+  <section><div class="grid2">
+    <figure><img src="screenshot-desktop-detail.png" alt="Éditeur"><figcaption>Éditeur de rectangle : labels monospace, pastilles cyan, dimensions alignées.</figcaption></figure>
+    <figure><img src="screenshot-mobile.png" alt="Mobile"><figcaption>Mobile : thème sombre reposant, panneau empilé, plan 60 vh.</figcaption></figure>
+  </div></section>
+  <section><h2>Palette</h2><div class="swatches">
+    <div class="sw"><div class="c" style="background:#54C6F0"></div><div class="t"><b>Cyan</b><span>#54C6F0</span></div></div>
+    <div class="sw"><div class="c" style="background:#4FD0A6"></div><div class="t"><b>Teal (valide)</b><span>#4FD0A6</span></div></div>
+    <div class="sw"><div class="c" style="background:#FF6B7A"></div><div class="t"><b>Rouge (conflit)</b><span>#FF6B7A</span></div></div>
+    <div class="sw"><div class="c" style="background:#0C2A4A"></div><div class="t"><b>Plan (Prusse)</b><span>#0C2A4A</span></div></div>
+    <div class="sw"><div class="c" style="background:#0E1626"></div><div class="t"><b>Fond</b><span>#0E1626</span></div></div>
+    <div class="sw"><div class="c" style="background:#9FE0FF"></div><div class="t"><b>Murs</b><span>#9FE0FF</span></div></div>
+  </div></section>
+  <section><h2>Choix principaux</h2><ul class="choices">
+    <li><b>Interface sombre</b> type logiciel de CAO, reposante.</li>
+    <li><b>Plan = cyanotype</b> : murs cyan lumineux sur bleu de Prusse.</li>
+    <li><b>Mesures en monospace</b> (IBM Plex Mono) : cotes, coins, dimensions alignés.</li>
+    <li><b>Conflit rouge néon</b> ultra-lisible sur fond sombre.</li>
+    <li><b>Coins numérotés</b> cyan, intégrés au linework.</li>
+    <li><b>Lueurs</b> plutôt qu'ombres ; fond de scène millimétré.</li>
+    <li><b>Icônes SVG</b> linéaires, zéro emoji.</li>
+    <li><b>Logo réticule</b> de visée — « centrer au cm près ».</li>
+  </ul></section>
+</main>
+</body></html>

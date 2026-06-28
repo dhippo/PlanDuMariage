@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposition 1 — Atelier Floral</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+:root{--olivier:#5C6B57;--or:#B8923C;--encre:#2C2823;--encre2:#6F665A;--ivoire:#F6F2EA;--ligne:#E8E0D2}
+*{margin:0;box-sizing:border-box}
+body{font-family:"Inter",sans-serif;color:var(--encre);
+  background:radial-gradient(1200px 600px at 80% -10%,#FCF8F0,transparent 60%),var(--ivoire);
+  line-height:1.6;padding:0 0 80px}
+header{padding:56px 7vw 40px;border-bottom:1px solid var(--ligne);background:#fff;box-shadow:0 1px 0 var(--or)}
+.kicker{font-size:12px;font-weight:600;letter-spacing:.28em;text-transform:uppercase;color:var(--or)}
+h1{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:54px;line-height:1.05;margin:8px 0 6px}
+h1 em{font-style:italic;color:var(--olivier)}
+.lead{font-size:17px;color:var(--encre2);max-width:680px}
+main{padding:0 7vw}
+section{margin-top:52px}
+h2{font-family:"Cormorant Garamond",serif;font-weight:600;font-size:30px;margin-bottom:18px}
+.logo-band{display:flex;justify-content:center;background:#fff;border:1px solid var(--ligne);border-radius:16px;padding:28px;box-shadow:0 8px 26px rgba(70,58,42,.08)}
+.logo-band img{max-width:560px;width:100%}
+figure{margin:0}
+figure img{width:100%;border:1px solid var(--ligne);border-radius:14px;box-shadow:0 8px 26px rgba(70,58,42,.08);display:block}
+figcaption{font-size:13px;color:var(--encre2);margin-top:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.sw{border:1px solid var(--ligne);border-radius:12px;overflow:hidden;background:#fff}
+.sw .c{height:62px}
+.sw .t{padding:9px 11px;font-size:12px}
+.sw .t b{display:block;font-size:13px}
+.sw .t span{color:var(--encre2);font-family:"Inter";font-variant-numeric:tabular-nums}
+.choices{columns:2;column-gap:34px}
+.choices li{margin:0 0 11px;break-inside:avoid;font-size:14.5px;color:var(--encre2);list-style:none;padding-left:22px;position:relative}
+.choices li::before{content:"";position:absolute;left:0;top:9px;width:9px;height:9px;border-radius:50%;background:var(--olivier)}
+.choices b{color:var(--encre)}
+.cta{display:inline-block;margin-top:16px;background:var(--olivier);color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:9px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}.choices{columns:1}h1{font-size:38px}}
+</style></head>
+<body>
+<header>
+  <div class="kicker">Proposition 1 · Refonte visuelle</div>
+  <h1>Atelier <em>Floral</em></h1>
+  <p class="lead">Direction éditoriale, douce et premium — lin, eucalyptus et lumière de bougie.
+  Une papeterie de mariage devenue logiciel. Serif élégante, vert olivier signature, filet doré.</p>
+  <a class="cta" href="demo/index.html">▶ Ouvrir la démo interactive</a>
+</header>
+<main>
+  <section>
+    <h2>Logo</h2>
+    <div class="logo-band"><img src="logo-PlanDuMariage.png" alt="Logo Atelier Floral"></div>
+  </section>
+
+  <section>
+    <h2>Aperçu — Plan global (desktop)</h2>
+    <figure><img src="screenshot-desktop-global.png" alt="Desktop global">
+      <figcaption>Barre supérieure, toolbar gauche, plan global, tables (valide / sélectionnée / conflit) et rectangle.</figcaption></figure>
+  </section>
+
+  <section>
+    <div class="grid2">
+      <figure><img src="screenshot-desktop-detail.png" alt="Éditeur de rectangle">
+        <figcaption>Éditeur de rectangle ouvert : champs, dimensions et palette de couleurs coordonnée.</figcaption></figure>
+      <figure><img src="screenshot-mobile.png" alt="Mobile">
+        <figcaption>Adaptation mobile : panneau empilé pleine largeur, plan en 60 vh.</figcaption></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Palette</h2>
+    <div class="swatches">
+      <div class="sw"><div class="c" style="background:#5C6B57"></div><div class="t"><b>Olivier</b><span>#5C6B57</span></div></div>
+      <div class="sw"><div class="c" style="background:#B8923C"></div><div class="t"><b>Or</b><span>#B8923C</span></div></div>
+      <div class="sw"><div class="c" style="background:#BC6C4F"></div><div class="t"><b>Terracotta</b><span>#BC6C4F</span></div></div>
+      <div class="sw"><div class="c" style="background:#C6868F"></div><div class="t"><b>Rose poudré</b><span>#C6868F</span></div></div>
+      <div class="sw"><div class="c" style="background:#F6F2EA"></div><div class="t"><b>Ivoire</b><span>#F6F2EA</span></div></div>
+      <div class="sw"><div class="c" style="background:#2C2823"></div><div class="t"><b>Encre</b><span>#2C2823</span></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Choix principaux</h2>
+    <ul class="choices">
+      <li><b>Typo</b> — Cormorant Garamond (titre) + Inter (interface).</li>
+      <li><b>Signature</b> — vert olivier + un filet doré comme seul ornement.</li>
+      <li><b>Plan harmonisé</b> — ouvertures bleu ardoise / olivier / terracotta (fini le bleu-orange criard).</li>
+      <li><b>Coins numérotés</b> en taupe discret (et non bleu vif).</li>
+      <li><b>Sélection</b> de table en or, conflit en brique : élégant et lisible.</li>
+      <li><b>Icônes SVG</b> linéaires, aucun emoji ; marqueurs de jardin sobres.</li>
+      <li><b>Rectangles</b> aux 5 teintes coordonnées (lin, sauge, terracotta, brume, miel).</li>
+      <li><b>Cartes</b> blanches, arrondis doux 12 px, ombres chaudes.</li>
+    </ul>
+  </section>
+</main>
+</body></html>

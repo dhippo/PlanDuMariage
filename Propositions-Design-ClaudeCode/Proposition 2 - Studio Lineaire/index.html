@@ -1,0 +1,67 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposition 2 — Studio Linéaire</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+:root{--accent:#5B5BD6;--ink:#16181D;--ink2:#5B6472;--bg:#F6F7F9;--line:#E7E9EE}
+*{margin:0;box-sizing:border-box}
+body{font-family:"Inter",sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;padding:0 0 80px}
+header{padding:52px 7vw 38px;background:#fff;border-bottom:1px solid var(--line)}
+.kicker{font-size:12px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font-size:46px;font-weight:600;letter-spacing:-.025em;line-height:1.04;margin:10px 0 8px}
+h1 b{color:var(--accent)}
+.lead{font-size:17px;color:var(--ink2);max-width:680px}
+main{padding:0 7vw}section{margin-top:50px}
+h2{font-size:22px;font-weight:600;letter-spacing:-.01em;margin-bottom:18px}
+.logo-band{display:flex;justify-content:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px;box-shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.07)}
+.logo-band img{max-width:560px;width:100%}
+figure{margin:0}figure img{width:100%;border:1px solid var(--line);border-radius:12px;box-shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.07);display:block}
+figcaption{font-size:13px;color:var(--ink2);margin-top:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.swatches{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.sw{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.sw .c{height:60px}.sw .t{padding:9px 11px;font-size:12px}.sw .t b{display:block;font-size:13px}.sw .t span{color:var(--ink2);font-variant-numeric:tabular-nums}
+.choices{columns:2;column-gap:34px}
+.choices li{margin:0 0 11px;break-inside:avoid;font-size:14.5px;color:var(--ink2);list-style:none;padding-left:22px;position:relative}
+.choices li::before{content:"";position:absolute;left:0;top:8px;width:8px;height:8px;border-radius:2px;background:var(--accent)}
+.choices b{color:var(--ink)}
+.cta{display:inline-block;margin-top:16px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;font-size:14px;padding:11px 18px;border-radius:8px;box-shadow:0 1px 2px rgba(91,91,214,.35)}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}.choices{columns:1}h1{font-size:36px}}
+</style></head>
+<body>
+<header>
+  <div class="kicker">Proposition 2 · Refonte visuelle</div>
+  <h1>Studio <b>Linéaire</b></h1>
+  <p class="lead">Direction moderne et minimaliste, esprit outil SaaS. Neutres froids, un seul
+  accent indigo, beaucoup de blanc, une typographie unique (Inter) et un système d'états clair.</p>
+  <a class="cta" href="demo/index.html">▶ Ouvrir la démo interactive</a>
+</header>
+<main>
+  <section><h2>Logo</h2><div class="logo-band"><img src="logo-PlanDuMariage.png" alt="Logo"></div></section>
+  <section><h2>Aperçu — Plan global (desktop)</h2>
+    <figure><img src="screenshot-desktop-global.png" alt="Desktop global">
+      <figcaption>Barre supérieure compacte, toolbar gauche, plan en gris froids, tables colorées comme de la donnée.</figcaption></figure></section>
+  <section><div class="grid2">
+    <figure><img src="screenshot-desktop-detail.png" alt="Éditeur"><figcaption>Éditeur de rectangle : ring de focus indigo, pastilles carrées arrondies.</figcaption></figure>
+    <figure><img src="screenshot-mobile.png" alt="Mobile"><figcaption>Mobile : panneau empilé, densité « productivité » naturelle au doigt.</figcaption></figure>
+  </div></section>
+  <section><h2>Palette</h2><div class="swatches">
+    <div class="sw"><div class="c" style="background:#5B5BD6"></div><div class="t"><b>Indigo</b><span>#5B5BD6</span></div></div>
+    <div class="sw"><div class="c" style="background:#1F9D63"></div><div class="t"><b>Vert (valide)</b><span>#1F9D63</span></div></div>
+    <div class="sw"><div class="c" style="background:#E5484D"></div><div class="t"><b>Rouge (conflit)</b><span>#E5484D</span></div></div>
+    <div class="sw"><div class="c" style="background:#16181D"></div><div class="t"><b>Ink</b><span>#16181D</span></div></div>
+    <div class="sw"><div class="c" style="background:#F6F7F9"></div><div class="t"><b>Fond</b><span>#F6F7F9</span></div></div>
+    <div class="sw"><div class="c" style="background:#E7E9EE"></div><div class="t"><b>Ligne</b><span>#E7E9EE</span></div></div>
+  </div></section>
+  <section><h2>Choix principaux</h2><ul class="choices">
+    <li><b>Typo unique</b> — Inter en plusieurs graisses, chiffres tabulaires.</li>
+    <li><b>Accent unique</b> — indigo pour primaire / focus / sélection.</li>
+    <li><b>Système d'états</b> — vert = valide, rouge = conflit, indigo = sélection.</li>
+    <li><b>Plan neutre</b> — gris froids ; seules les tables et ouvertures sont colorées.</li>
+    <li><b>Coins numérotés</b> en gris froid quasi invisible.</li>
+    <li><b>Cartes flat</b> — hiérarchie par les tons, micro-ombres nettes, 7–10 px.</li>
+    <li><b>Icônes SVG</b> linéaires, zéro emoji.</li>
+    <li><b>Logo</b> app-tile indigo « table + places ».</li>
+  </ul></section>
+</main>
+</body></html>

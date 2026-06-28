@@ -1,0 +1,310 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+/* =========================================================================
+   PLAN DU MARIAGE — Direction « CYANOTYPE »
+   Architectural · technique · table à dessin / CAO. Fond ardoise profond,
+   traits cyan, cotes monospace. Le plan se lit comme un calque d'architecte.
+   (feuille de style de DÉMONSTRATION — la logique du plan est inchangée)
+   ========================================================================= */
+
+:root{
+  /* — Surfaces sombres — */
+  --bg:        #0E1626;
+  --header:    #0B1322;
+  --panel:     #121E33;
+  --panel-2:   #16243C;
+  --line:      #25344E;
+  --line-2:    #33476A;
+
+  /* — Encres claires — */
+  --ink:   #D3E0F2;
+  --ink-2: #92A6C6;
+  --ink-3: #64799C;
+
+  /* — Accents techniques — */
+  --cyan:        #54C6F0;
+  --cyan-clair:  #8FDCFA;
+  --cyan-deep:   #1E5C84;
+  --teal:        #4FD0A6;
+
+  /* — Plan (calque bleu) — */
+  --plan-bg:      #0C2A4A;
+  --mur:          #9FE0FF;
+  --salon:        #123A60;
+  --jardin:       #15463C;
+  --reste-jardin: #0F3A33;
+  --terrasse:     #11355A;
+  --dalle:        #2C2F54;
+  --dalle-bord:   #6271AC;
+  --maison-reste: #0B2240;
+  --grille:       rgba(120,200,240,.12);
+  --grille-fort:  rgba(120,200,240,.22);
+
+  /* États de table */
+  --tbl-valide:#17564A; --tbl-valide-bord:#4FD0A6;
+  --tbl-select:#1C5A84; --tbl-select-bord:#7FD4FF;
+  --tbl-invalide:#5A2330; --tbl-invalide-bord:#FF6B7A;
+
+  /* Ouvertures */
+  --c-fenetre:#54C6F0; --c-pf:#4FD0A6; --c-porte:#F2A65A; --c-maison:#46618C;
+
+  --coin:#8FDCFA; --cote:#74C7E8; --etiquette:rgba(150,205,245,.12);
+
+  --hatch-rose-bg:#2A3556; --hatch-rose-line:#6271AC;
+  --hatch-leaf-bg:#16344E; --hatch-leaf-line:#3E6088;
+
+  /* Rectangles libres (teintes désaturées sur fond sombre) */
+  --rect-1-fill:#243A5C; --rect-1-bord:#5C77AE;
+  --rect-2-fill:#1C4A4C; --rect-2-bord:#4FB0A8;
+  --rect-3-fill:#4A3A28; --rect-3-bord:#C08A50;
+  --rect-4-fill:#203F5E; --rect-4-bord:#5A93C8;
+  --rect-5-fill:#27452F; --rect-5-bord:#5FA86E;
+
+  --r-sm:6px; --r-md:8px; --r-lg:10px;
+  --sh-1:0 1px 2px rgba(0,0,0,.35);
+  --sh-2:0 10px 30px rgba(0,0,0,.45);
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; margin:0; }
+
+body{
+  display:flex; flex-direction:column;
+  font-family:"IBM Plex Sans", system-ui, sans-serif;
+  color:var(--ink); background:var(--bg);
+  overflow:hidden; -webkit-font-smoothing:antialiased;
+}
+
+/* ------------------------------ En-tête ------------------------------- */
+.entete{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:13px 22px;
+  background:var(--header);
+  border-bottom:1px solid var(--line);
+}
+.entete__brand{ display:flex; align-items:center; gap:12px; }
+.marque{ width:32px; height:32px; flex-shrink:0;
+  background:url('marque.svg') center/contain no-repeat; }
+.entete h1{
+  margin:0; font-family:"IBM Plex Mono", monospace;
+  font-size:16px; font-weight:500; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--ink);
+}
+.entete__plan{ display:flex; align-items:center; gap:10px; }
+.entete__plan label{
+  font-family:"IBM Plex Mono", monospace;
+  font-size:11px; font-weight:500; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);
+}
+
+/* --------------------- Champs de formulaire (commun) ------------------ */
+select, input[type=text], input[type=number]{
+  font-family:inherit; color:var(--ink);
+  background:var(--panel-2); border:1px solid var(--line-2);
+  border-radius:var(--r-sm); transition:border-color .14s, box-shadow .14s;
+}
+select:focus, input[type=text]:focus, input[type=number]:focus{
+  outline:none; border-color:var(--cyan);
+  box-shadow:0 0 0 3px rgba(84,198,240,.22);
+}
+.entete__plan select{
+  appearance:none; -webkit-appearance:none;
+  padding:8px 32px 8px 12px; font-size:13px; font-weight:500; cursor:pointer;
+  font-family:"IBM Plex Mono", monospace; letter-spacing:.02em;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2392A6C6' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:right 12px center; min-width:178px;
+}
+.entete__plan select:hover{ border-color:var(--cyan-deep); }
+
+/* ----------------------- Disposition générale ------------------------- */
+.appli{ flex:1; display:flex; min-height:0; }
+.panneau{
+  width:300px; flex-shrink:0; padding:18px;
+  overflow-y:auto; background:var(--panel);
+  border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:17px;
+}
+
+/* -------------------------------- Boutons ----------------------------- */
+.bloc-actions{ display:flex; flex-direction:column; gap:8px; }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:9px;
+  padding:10px 14px; border:1px solid transparent; border-radius:var(--r-sm);
+  font-family:inherit; font-size:13px; font-weight:600; letter-spacing:.01em;
+  cursor:pointer; transition:background .14s, border-color .14s, box-shadow .14s, color .14s;
+}
+.btn svg{ flex-shrink:0; }
+.btn--principal{ background:var(--cyan); color:#06243B; box-shadow:0 0 0 1px rgba(84,198,240,.4), 0 6px 18px rgba(31,92,132,.45); }
+.btn--principal:hover{ background:var(--cyan-clair); }
+.btn--rect{ background:transparent; color:var(--cyan); border-color:var(--cyan-deep); }
+.btn--rect:hover{ background:rgba(84,198,240,.1); border-color:var(--cyan); }
+.btn--secondaire{ background:transparent; color:var(--ink-2); border-color:var(--line-2); }
+.btn--secondaire:hover{ background:var(--panel-2); color:var(--ink); }
+.btn:disabled{ opacity:.4; cursor:not-allowed; box-shadow:none; }
+
+/* --------------------------- Éditeur rectangle ------------------------ */
+.editeur[hidden]{ display:none !important; }
+.editeur{
+  background:var(--panel-2); border:1px solid var(--line-2);
+  border-radius:var(--r-md); padding:15px;
+  display:flex; flex-direction:column; gap:12px;
+}
+.editeur h2{ font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; margin:0; color:var(--cyan); }
+.champ{ display:flex; flex-direction:column; gap:6px; font-size:11px; font-weight:500;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3);
+  font-family:"IBM Plex Mono",monospace; }
+.champ input[type=text]{ padding:8px 10px; font-size:13.5px; font-weight:400; letter-spacing:0; text-transform:none; font-family:"IBM Plex Sans",sans-serif; }
+.champ-dims{ display:flex; gap:10px; }
+.champ-dims label{ flex:1; display:flex; flex-direction:column; gap:5px;
+  font-size:10.5px; font-weight:500; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3);
+  font-family:"IBM Plex Mono",monospace; }
+.champ-dims input{ width:100%; padding:7px 9px; font-size:13.5px; font-family:"IBM Plex Mono",monospace; }
+.couleurs{ display:flex; gap:9px; margin-top:2px; }
+.pastille-couleur{
+  width:28px; height:28px; border-radius:6px;
+  border:1px solid; padding:0; cursor:pointer; transition:transform .1s, box-shadow .12s;
+}
+.pastille-couleur:hover{ transform:scale(1.1); }
+.pastille-couleur.active{ box-shadow:0 0 0 2px var(--panel-2), 0 0 0 4px var(--cyan); }
+
+/* ------------------------------ Réglages ------------------------------ */
+.reglage{ display:flex; flex-direction:column; gap:9px; }
+.reglage label{ font-size:12.5px; color:var(--ink-2); line-height:1.45; }
+.reglage strong{ color:var(--ink); font-weight:600; font-family:"IBM Plex Mono",monospace; }
+.reglage__hint{ font-size:11px; color:var(--ink-3); }
+.reglage--zoom{ background:var(--panel-2); border:1px solid var(--line); border-radius:var(--r-md); padding:13px 14px; }
+
+input[type=range]{
+  -webkit-appearance:none; appearance:none; width:100%; height:4px;
+  border-radius:99px; background:#22354F; cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+  background:var(--cyan); border:2px solid var(--panel); box-shadow:0 0 8px rgba(84,198,240,.6); }
+input[type=range]::-moz-range-thumb{
+  width:16px; height:16px; border-radius:50%; background:var(--cyan);
+  border:2px solid var(--panel); box-shadow:0 0 8px rgba(84,198,240,.6); }
+
+/* ------------------------------ Compteur ------------------------------ */
+.compteur{
+  background:linear-gradient(180deg,#16243C,#102038);
+  border:1px solid var(--line-2); border-left:2px solid var(--cyan);
+  border-radius:var(--r-md); padding:14px 16px;
+  display:flex; flex-direction:column; gap:7px;
+}
+.compteur__ligne{ font-size:13px; color:var(--ink-2); display:flex; align-items:baseline; }
+.compteur__chiffre{
+  font-family:"IBM Plex Mono",monospace; font-size:25px; font-weight:600; line-height:1;
+  color:var(--cyan); margin-right:9px; min-width:30px;
+}
+
+/* ------------------------------ Légende ------------------------------- */
+.legende h2{ font-family:"IBM Plex Mono",monospace; font-size:11px; font-weight:600;
+  letter-spacing:.12em; text-transform:uppercase; margin:0 0 11px; color:var(--ink-3); }
+.legende ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:8px; }
+.legende li{ display:flex; align-items:center; gap:10px; font-size:12.5px; color:var(--ink-2); }
+.pastille{ width:13px; height:13px; border-radius:50%; flex-shrink:0; }
+.pastille--valide{   background:var(--tbl-valide);   border:2px solid var(--tbl-valide-bord); }
+.pastille--select{   background:var(--tbl-select);   border:2px solid var(--tbl-select-bord); }
+.pastille--invalide{ background:var(--tbl-invalide); border:2px solid var(--tbl-invalide-bord); }
+.trait{ width:20px; height:0; border-top-width:3.5px; border-top-style:solid; flex-shrink:0; }
+.trait--fenetre{ border-top-color:var(--c-fenetre); }
+.trait--pf{      border-top-color:var(--c-pf); }
+.trait--porte{   border-top-color:var(--c-porte); }
+.aide{ margin-top:12px; font-size:11.5px; line-height:1.55; color:var(--ink-3);
+  padding-top:12px; border-top:1px solid var(--line); }
+
+/* -------------------------------- Scène ------------------------------- */
+.scene{ flex:1; min-width:0; min-height:0; padding:18px;
+  position:relative; overflow:hidden;
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0/26px 26px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0/26px 26px,
+    var(--bg);
+  background-blend-mode:soft-light, soft-light, normal;
+}
+#plan{
+  display:block; background:var(--plan-bg);
+  border:1px solid var(--line-2); border-radius:var(--r-lg);
+  box-shadow:var(--sh-2), 0 0 0 1px rgba(84,198,240,.08) inset;
+  touch-action:none;
+}
+
+/* --------------------- Styles des éléments SVG ------------------------ */
+.grille{ stroke:var(--grille); stroke-width:1; pointer-events:none; }
+.grille--fort{ stroke:var(--grille-fort); stroke-width:1.3; }
+
+.piece-fond{ fill:var(--salon); }
+.fond--salon{ fill:var(--salon); }
+.fond--jardin{ fill:var(--jardin); }
+.fond--reste-jardin{ fill:var(--reste-jardin); }
+.fond--terrasse{ fill:var(--terrasse); }
+.fond--couloir{ fill:var(--dalle); }
+.fond--entree{ fill:var(--dalle); }
+.fond--maison-reste{ fill:var(--maison-reste); }
+.piece-contour{ fill:none; stroke:var(--mur); stroke-width:4; stroke-linejoin:miter; pointer-events:none; }
+.mur{ fill:none; stroke:var(--mur); stroke-width:4; stroke-linejoin:miter; stroke-linecap:square; pointer-events:none; }
+
+.zone--rose{ fill:url(#hachures-rose); stroke:var(--dalle-bord); stroke-width:1.5; }
+.zone--feuillage{ fill:url(#hachures-feuillage); stroke:#3E6088; stroke-width:1.5; }
+.zone--buissons{ fill:url(#hachures-feuillage); stroke:#3E6088; stroke-width:1.5; }
+.zone--plant{ fill:#1F6E4E; stroke:#4FD0A6; stroke-width:1.5; }
+.zone-label{ font-size:36px; font-weight:600; font-family:"IBM Plex Mono",monospace;
+  letter-spacing:.04em; pointer-events:none; user-select:none; }
+.zone-label--rose{      fill:#9AA6D6; }
+.zone-label--feuillage{ fill:#6E84A8; }
+.zone-label--buissons{  fill:#6E84A8; }
+.zone-label--plant{     fill:#6FE0B6; }
+
+.arbre{ stroke-width:2.5; }
+.arbre--cerisier{ fill:#123A60; stroke:#54C6F0; }
+.arbre--vert{ fill:#2C8A6A; stroke:#4FD0A6; }
+.arbre--orange{ fill:#5A4327; stroke:#F2A65A; }
+.arbre-emoji{ pointer-events:none; user-select:none; }
+
+.point{ stroke-width:2.5; pointer-events:none; }
+.point--bleu{ fill:#54C6F0; stroke:#8FDCFA; }
+.point-halo{ pointer-events:none; }
+.point-halo--bleu{ fill:rgba(84,198,240,.10); stroke:rgba(84,198,240,.32); stroke-width:1.5; }
+.point-halo--plant{ fill:rgba(79,208,166,.16); stroke:#4FD0A6; stroke-width:2; }
+
+.cote{ fill:var(--cote); font-size:16px; font-weight:500; font-family:"IBM Plex Mono",monospace;
+  letter-spacing:.02em; pointer-events:none; user-select:none; }
+
+.etiquette{ fill:var(--etiquette); font-family:"IBM Plex Mono",monospace;
+  font-size:60px; font-weight:600; letter-spacing:4px; text-transform:uppercase;
+  pointer-events:none; user-select:none; }
+
+.coin{ fill:var(--coin); font-size:28px; font-weight:600; font-family:"IBM Plex Mono",monospace;
+  paint-order:stroke; stroke:#08203A; stroke-width:4; pointer-events:none; user-select:none; }
+
+.ouverture{ stroke-width:8; pointer-events:none; stroke-linecap:butt; }
+.ouverture--fenetre{ stroke:var(--c-fenetre); }
+.ouverture--porte-fenetre{ stroke:var(--c-pf); }
+.ouverture--porte{ stroke:var(--c-porte); }
+.ouverture--maison{ stroke:var(--c-maison); stroke-width:4; stroke-dasharray:10 8; }
+.ouverture-label{ fill:var(--ink-3); font-size:13px; font-family:"IBM Plex Mono",monospace; pointer-events:none; user-select:none; }
+
+.degagement{ fill:rgba(84,198,240,.05); stroke:rgba(84,198,240,.34); stroke-width:1; stroke-dasharray:4 5; pointer-events:none; }
+
+.table{ stroke-width:2.5; cursor:grab; }
+.table--valide{   fill:var(--tbl-valide);   stroke:var(--tbl-valide-bord); }
+.table--select{   fill:var(--tbl-select);   stroke:var(--tbl-select-bord); }
+.table--invalide{ fill:var(--tbl-invalide); stroke:var(--tbl-invalide-bord); }
+.table-num{ fill:#DCEBFA; font-size:30px; font-weight:600; font-family:"IBM Plex Mono",monospace;
+  pointer-events:none; user-select:none; }
+
+.rect{ stroke-width:2; cursor:grab; }
+.rect--select{ stroke-width:4; }
+.rect-titre{ fill:#DCEBFA; font-size:30px; font-weight:600; font-family:"IBM Plex Mono",monospace; pointer-events:none; user-select:none; }
+.rect-dim{ fill:#9DB6D4; font-size:20px; font-family:"IBM Plex Mono",monospace; pointer-events:none; user-select:none; }
+.rect-poignee{ fill:var(--plan-bg); stroke:var(--cyan); stroke-width:3; cursor:nwse-resize; }
+
+/* ------------------------- Petit écran -------------------------------- */
+@media (max-width:760px){
+  html,body{ height:auto; }
+  body{ overflow:auto; }
+  .appli{ flex-direction:column; }
+  .panneau{ width:100%; border-right:none; border-bottom:1px solid var(--line); }
+  .scene{ flex:none; height:60vh; }
+}

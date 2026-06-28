@@ -1,0 +1,32 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@500;600&display=swap');
+*{margin:0;box-sizing:border-box}
+html,body{width:1200px;height:520px}
+body{display:flex;align-items:center;justify-content:center;gap:38px;
+  background:
+    linear-gradient(rgba(120,200,240,.05) 1px,transparent 1px) 0 0/30px 30px,
+    linear-gradient(90deg,rgba(120,200,240,.05) 1px,transparent 1px) 0 0/30px 30px,
+    radial-gradient(700px 420px at 60% 30%,#13294a,#0B1322);
+  font-family:"IBM Plex Sans",sans-serif}
+.mark{width:150px;height:150px;flex-shrink:0;filter:drop-shadow(0 0 24px rgba(84,198,240,.35))}
+.word{display:flex;flex-direction:column;gap:13px}
+.title{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:62px;line-height:1;
+  letter-spacing:.04em;color:#E2EEFB}
+.title span{color:#54C6F0}
+.tag{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:500;letter-spacing:.34em;
+  text-transform:uppercase;color:#7C93B6;display:flex;align-items:center;gap:13px}
+.tag::before{content:"";width:46px;height:1px;background:#33476A}
+</style></head>
+<body>
+  <svg class="mark" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2.5" y="2.5" width="35" height="35" rx="6" fill="#0C2A4A" stroke="#1E5C84" stroke-width="1.2"/>
+    <path d="M20 5.5V13M20 27V34.5M5.5 20H13M27 20H34.5" stroke="#54C6F0" stroke-width="1.2" stroke-linecap="round"/>
+    <circle cx="20" cy="20" r="8" fill="none" stroke="#9FE0FF" stroke-width="1.5"/>
+    <circle cx="20" cy="20" r="1.8" fill="#54C6F0"/>
+  </svg>
+  <div class="word">
+    <div class="title">PLAN<span>·</span>MARIAGE</div>
+    <div class="tag">Cyanotype · Plan technique</div>
+  </div>
+</body></html>
