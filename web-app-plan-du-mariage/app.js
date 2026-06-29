@@ -141,6 +141,19 @@ PLANS.global = (function(){
   // coin bas-droite du couloir (1760,440). Pièce praticable distincte.
   const entree = [ [1760,60], [2160,60], [2160,510], [1760,510] ];
 
+  // Terrasse + couloir + entrée FUSIONNÉS en UNE seule pièce praticable : on
+  // greffe le tour de l'entrée sur le bord droit du couloir (x=1760). Résultat :
+  // plus de mur interne entre Couloir et Entrée Dalle Terrasse (sous le coin 8) ;
+  // le mur AU-DESSUS du coin 8 (x=1760, y 60→240, côté maison) reste, lui, tracé.
+  // Sert UNIQUEMENT à "contours" (collision + murs) ; coinsContinus et fonds
+  // continuent d'utiliser terrasseCouloir et entree séparément.
+  const terrasseCouloirEntree = [];
+  for(const p of terrasseCouloir){
+    terrasseCouloirEntree.push(p);
+    if(p[0] === 1760 && p[1] === 240)
+      terrasseCouloirEntree.push([1760,60], [2160,60], [2160,510], [1760,510]);
+  }
+
   // "Reste Jardin" : tout le terrain SOUS les zones utilisables (jardin
   // utilisable, terrasse, couloir, entrée). NON praticable (comme "Reste de la
   // maison") : pas dans "contours", donc aucune table valide ; juste un fond
@@ -195,20 +208,36 @@ PLANS.global = (function(){
 
   // Bloc "Buissons" : grand rectangle SOUS le plan (hors plan actuel), sur TOUTE
   // la largeur (2630 = de -470 à 2160) et 300 cm de profondeur (y 1430 -> 1730).
-  // Même hachure grise que le feuillage. Ses 2 coins du HAUT sont les coins 28
-  // (bas-gauche) et 27 (bas-droite) du Reste Jardin : ils gardent leur numéro
-  // (dédup). Placé en DERNIER dans coinsContinus, donc 1-30 ne bougent pas et
-  // seuls ses 2 coins du bas reçoivent un numéro : 31 (bas-droite), 32 (bas-gauche).
+  // Même hachure grise que le feuillage. Ses 2 coins du HAUT sont les coins 26
+  // (bas-gauche) et 25 (bas-droite) du Reste Jardin : ils gardent leur numéro
+  // (dédup). Placé en DERNIER dans coinsContinus, donc 1-28 ne bougent pas et
+  // seuls ses 2 coins du bas reçoivent un numéro : 29 (bas-droite), 30 (bas-gauche).
   const buissonsPoly = [
-    [-470, 1430],   // haut-gauche (= coin 28)
-    [2160, 1430],   // haut-droite (= coin 27)
-    [2160, 1730],   // bas-droite (nouveau coin 31)
-    [-470, 1730],   // bas-gauche (nouveau coin 32)
+    [-470, 1430],   // haut-gauche (= coin 26)
+    [2160, 1430],   // haut-droite (= coin 25)
+    [2160, 1730],   // bas-droite (nouveau coin 29)
+    [-470, 1730],   // bas-gauche (nouveau coin 30)
+  ];
+
+  // ÉPAISSEURS DE TRAIT (cf. dessinerTraits). Le plan global gère lui-même ses
+  // murs (contourAuto:false) pour distinguer deux poids :
+  //  - MOYEN  = tout le contour du Reste Jardin (frontière avec les zones
+  //    utilisables : 16-15-14-13-12-couloir-entrée, + rose droite, + feuillages,
+  //    + bas vers les buissons) ;
+  //  - ÉPAIS  = murs réels + PÉRIMÈTRE EXTÉRIEUR (gauche/haut du jardin, haut
+  //    terrasse/couloir/entrée, côté droit complet, et tour des buissons).
+  // Le périmètre extérieur est UNE polyligne ouverte ; il recouvre le moyen sur
+  // les arêtes communes (côté droit x=2160), d'où l'ordre moyen → épais.
+  const perimetreExt = [
+    [-470, 840],  [-470, 120], [0, 120], [0, 0], [300, 0], [300, 240],
+    [960, 240], [1760, 240], [1760, 60], [2160, 60],   // jardin g/haut + terrasse/couloir/entrée haut
+    [2160, 1730],                                       // tout le côté droit (entrée+jardin+buissons)
+    [-470, 1730], [-470, 1430],                         // bas + gauche des buissons
   ];
 
   return {
     nom: "Plan global",
-    contours: [ terrasseCouloir, salonC, entree ], // terrasse(+couloir)+salon+entrée
+    contours: [ terrasseCouloirEntree, salonC ], // terrasse+couloir+entrée fusionnés, + salon
     murs: mursMaison,                          // murs décoratifs (ferme la maison)
     // Coins numérotés en CONTINU (1, 2, 3...), SANS préfixe de lettre : chaque
     // point physique reçoit UN seul numéro unique (les coins partagés entre
@@ -217,18 +246,51 @@ PLANS.global = (function(){
     // (4 coins, offset serré) ; les autres zones décoratives (massif de roses
     // de gauche, cerisiers) ne le sont pas : on les désigne par leur nom.
     coinsContinus: [ salonC, resteMaison, terrasseCouloir,
-                     { poly: roseDroitePoly, off: 30 },     // rosier de droite : 4 coins (20-23)
+                     { poly: roseDroitePoly, off: 30 },     // rosier de droite : 4 coins (19-22)
                      entree, resteJardin, feuillagePoly,
-                     buissonsPoly ],                        // buissons : 2 nouveaux coins (31, 32)
-    // Placement forcé de certains numéros de coin. Coin 13 (960,440) : rentré
-    // DANS la terrasse (à gauche de son point) pour ne pas être recouvert par
-    // le bloc Plant posé juste à droite.
-    coinsOverride: { "960,440": [920, 462] },
+                     buissonsPoly ],                        // buissons : 2 nouveaux coins (29, 30)
+    // Placement forcé de certains numéros de coin. (960,440) : rentré DANS la
+    // terrasse (à gauche de son point) pour ne pas être recouvert par le bloc
+    // Plant posé juste à droite. (1760,240) = coin 8 : rapproché et rentré DANS
+    // « Reste de la maison » (haut-gauche de son point) plutôt que dans l'entrée.
+    coinsOverride: { "960,440": [920, 462], "1760,240": [1726, 208] },
+    // Coins CACHÉS (non numérotés) : recouverts par le demi-cercle Plant opaque
+    // ((1580,440), rayon 210, demi-disque bas). On retire (1760,440) et
+    // (1760,510) (anciens 12 et 26) : le compteur ne les compte plus, donc la
+    // numérotation reste continue 1→30 (au lieu de 1→32, sans trou).
+    coinsMasques: [ "1760,440", "1760,510" ],
+    // Le plan global trace ses murs via "traits" (deux épaisseurs), pas via le
+    // contour fermé automatique.
+    contourAuto: false,
+    traits: [
+      // MOYEN : tout le contour du Reste Jardin + les blocs rose droite &
+      // feuillages (frontières internes avec les zones utilisables).
+      // Reste Jardin : polyligne OUVERTE qui parcourt tout le contour SAUF les
+      // arêtes 14-15 (0,600)->(0,840) et 15-16 (0,840)->(-470,840), volontairement
+      // non tracées. On démarre au coin 14 et on termine au coin 16.
+      { poids:"moyen", ferme:false, points: [
+        [0,    600],   // coin 14
+        [960,  600],   // 13
+        [960,  440],   // 12
+        [1760, 440],
+        [1760, 510],
+        [2160, 510],
+        [2160, 1430],
+        [-470, 1430],
+        [-470, 840],   // coin 16
+      ] },
+      { poids:"moyen", points: feuillagePoly,  ferme:true },
+      { poids:"moyen", points: roseDroitePoly, ferme:true },
+      // ÉPAIS : salon + périmètre extérieur (recouvre le moyen sur le côté droit).
+      { poids:"epais", points: salonC,       ferme:true },
+      { poids:"epais", points: perimetreExt, ferme:false },
+    ],
     fonds: [
       { type:"maison-reste", points: resteMaison }, // reste de la maison (blanc)
       ...t.fonds,                              // jardin (vert) + terrasse (gris)
-      // reste du jardin (vert foncé pastel), quadrillé + contour, non praticable
-      { type:"reste-jardin", points: resteJardin, grille:true, contour:true },
+      // reste du jardin (vert foncé pastel), quadrillé ; son contour est tracé
+      // via plan.traits (poids "moyen"), pas par le contour auto.
+      { type:"reste-jardin", points: resteJardin, grille:true },
       { type:"couloir", points: couloir },     // couloir (bordeaux pastel)
       { type:"entree",  points: entree },      // entrée (bordeaux pastel)
       { type:"salon",   points: salonC },      // salon (crème)
@@ -236,8 +298,9 @@ PLANS.global = (function(){
     zones: [
       ...t.zones,                              // massif de roses (haut-gauche)
       // Rosier de droite SOUS l'Entrée Dalle Terrasse (70 x 100) : ses 4 coins
-      // sont numérotés (cf. coinsContinus).
-      { type:"rose", label:"Rosiers", rect:roseDroite },
+      // sont numérotés (cf. coinsContinus). Bloc étroit => label VERTICAL et plus
+      // petit (22px) pour tenir dedans (sinon "Rosiers" déborde en horizontal).
+      { type:"rose", label:"Rosiers", rect:roseDroite, labelVertical:true, labelTaille:22 },
       // "Feuillages" : zone CONDAMNÉE (hachuré grisé) au coin bas-droite du
       // Reste Jardin, étendue vers le haut par le "trait" (pentagone). Étiquette
       // placée dans le corps rectangulaire (et non au centroïde, tiré vers le haut).
@@ -245,38 +308,31 @@ PLANS.global = (function(){
       // Buissons : grand bloc grisé SOUS le plan, toute la largeur (2630 x 300).
       { type:"buissons", label:"Buissons", points:buissonsPoly, labelXY:[845,1580] },
       // Bloc "Plant" : petit rectangle vert vif (320 x 120), coin haut-gauche
-      // confondu avec le coin 13 (960,440). Pas de numéro de coin.
+      // confondu avec le coin 12 (960,440). Pas de numéro de coin.
       { type:"plant", label:"Plant", rect:[960,440,320,120] },
     ],
-    arbres: [
-      // Grand cerisier : repéré depuis le coin bas-gauche du Feuillages
-      // (1650,1430) — 350 cm sur x (vers le jardin ouvert, à GAUCHE du bloc) et
-      // 210 cm vers le haut => (1300,1220).
-      { type:"cerisier", x:1300, y:1220, r:50 },
-      // Petit cerisier : repéré depuis le coin bas-gauche du Reste Jardin
-      // (-470,1430) — 220 cm à droite et 140 cm vers le haut => (-250,1290).
-      { type:"cerisier", x:-250, y:1290, r:32.5 },
-      // Petit arbre (pastille verte, sans emoji, taille du petit cerisier) :
-      // depuis le coin 30 (1650,1430) — 180 cm à gauche, 50 cm en haut => (1470,1380).
-      { type:"vert", x:1470, y:1380, r:16.25 },
-      // Gros arbre (pastille verte, taille du gros cerisier r=50) : depuis le
-      // coin 28 (-470,1430) — 680 cm à droite, 120 cm en dessous => (210,1550),
-      // dans le bloc Buissons.
-      { type:"vert", x:210, y:1550, r:50 },
-      // Nouvel arbre (pastille verte, taille du petit cerisier r=32.5) : depuis
-      // le coin 28 (-470,1430) — 1130 cm à droite, 40 cm vers le haut => (660,1390).
-      { type:"vert", x:660, y:1390, r:16.25 },
-      // Arbre (pastille verte) : depuis le coin 28 — 1410 cm à droite, 130 cm
-      // vers le haut => (940,1300).
-      { type:"vert", x:940, y:1300, r:16.25 },
-      // Arbre automne (disque orange, sobre, sans emoji) : depuis le coin 28 — 1520 cm à
-      // droite, 50 cm vers le haut => (1050,1380).
-      { type:"orange", x:1050, y:1380, r:32.5 },
+    // Arbres-images (illustrations PNG détourées, cf. assets/tree-elements/).
+    // Décor posé par numéro : (x,y) = centre cm, d = diamètre affiché cm.
+    // (Plus de pastilles `arbres` : tout le décor d'arbres passe par des images.)
+    arbresImg: [
+      // Les 2 anciens cerisiers -> arbre n°39. Celui de DROITE (ex grand cerisier)
+      // reste le plus large ; celui de gauche (ex petit cerisier) plus modeste.
+      { n:39, x:1300, y:1220, d:110 },   // droite (ex grand cerisier r=50)
+      { n:39, x:-250, y:1290, d:70  },   // gauche (ex petit cerisier r=32.5)
+      // Ancien disque pastel orange -> arbre n°29 (gardé petit).
+      { n:29, x:1050, y:1380, d:68 },
+      // Les 3 petits points verts du Reste Jardin -> arbre n°12 (gardés petits).
+      { n:12, x:1470, y:1380, d:42 },
+      { n:12, x:660,  y:1390, d:42 },
+      { n:12, x:940,  y:1300, d:42 },
+      // Gros arbre du bloc Buissons (ex pastille verte r=50) -> arbre n°10.
+      { n:10, x:210, y:1550, d:110 },
     ],
     points: [
-      // Demi-cercle "Plant" : centré 180 cm à gauche du coin 12 (1760,440) =>
-      // (1580,440), rayon 210, demi-disque inférieur, vert Plant translucide.
-      // Pas de point central ; étiquette "Plant" (mêmes classes que le bloc Plant).
+      // Demi-cercle "Plant" : centré 180 cm à gauche du point (1760,440) =>
+      // (1580,440), rayon 210, demi-disque inférieur, vert Plant OPAQUE (= bloc
+      // Plant). Pas de point central ; étiquette "Plant" (mêmes classes que le bloc).
+      // Il recouvre (1760,440) et (1760,510), d'où leur masquage dans coinsMasques.
       { type:"plant", x:1580, y:440, rayon:210, demi:"bas", label:"Plant", labelXY:[1580,545] },
     ],
     ouvertures: [
@@ -299,11 +355,16 @@ PLANS.global = (function(){
       { label:"400 cm", x:1960, y:38   },      // entrée : largeur
       { label:"450 cm", x:2200, y:285  },      // entrée : hauteur
       { label:"2630 cm", x:845,  y:1765 },     // largeur du bas (Reste Jardin + Buissons) ; sous les buissons
-      { label:"100 cm",  x:2215, y:560  },     // coins 21-22 : côté droit du rosier de droite
-      { label:"820 cm",  x:2220, y:1020 },     // coins 22-27 : côté droit (bas rosier -> bas du plan)
-      { label:"450 cm",  x:1590, y:1205 },     // coins 29-30 : côté gauche du feuillage
-      { label:"240 cm",  x:40,   y:720  },     // coins 15-16 : segment vertical x=0 (terrasse -> jardin)
+      { label:"100 cm",  x:2215, y:560  },     // coins 20-21 : côté droit du rosier de droite
+      { label:"820 cm",  x:2110, y:1020 },     // coins 21-25 : côté droit (bas rosier -> bas du plan)
+      { label:"450 cm",  x:1590, y:1205 },     // coins 27-28 : côté gauche du feuillage
+      { label:"240 cm",  x:40,   y:720  },     // coins 14-15 : segment vertical x=0 (terrasse -> jardin)
       { label:"300 cm",  x:-515, y:1580 },     // buissons : profondeur (côté gauche)
+      { label:"590 cm",  x:-505, y:1135 },     // coins 16-26 : côté gauche (bas jardin -> bas reste jardin)
+      { label:"300 cm",  x:2110, y:1580 },     // coins 25-29 : côté droit (bas reste jardin -> bas buissons)
+      { label:"962 cm",  x:1279, y:-515 },     // coins 2-7 : haut de la maison (S2 -> coin 7)
+      { label:"540 cm",  x:1815, y:-210 },     // coins 7-23 : côté droit de la maison (vers l'entrée)
+      { label:"406 cm",  x:855,  y:-277 },     // coins 2-3 : mur droit haut du salon
     ],
     etiquettes: [
       { label:"Salon",    x: 549, y:-277 },   // centré dans le rectangle haut du salon (coins 1-2-3)
@@ -313,6 +374,10 @@ PLANS.global = (function(){
       { label:"Reste de la maison", x:1250, y:-120 },
       { label:["Entrée","Dalle Terrasse"], x:1960, y:285, taille:34, couleur:"#8a4a5e" },
       { label:"Reste Jardin", x:845, y:1140 },             // grande zone basse non praticable
+      // PORTAIL : au-dessus de l'arête 23-24 (haut de l'entrée, y=60) et de sa
+      // cote "400 cm" (y=38). Police spéciale (.etiquette = Cormorant Garamond),
+      // couleur verte olivier du bouton "Ajouter une table" (--olivier #5C6B57).
+      { label:"PORTAIL", x:1960, y:-15, taille:60, couleur:"#5C6B57", graisse:700 },
     ],
     spawn: [200, 430],
   };
@@ -321,23 +386,62 @@ PLANS.global = (function(){
 
 /* ============================ 2. ÉTAT ================================== */
 
-let planActif     = "global"; // identifiant du plan affiché au démarrage (sélecteur modifiable)
-const tables      = [];      // <<< SOURCE DE VÉRITÉ (tables rondes)
-const rectangles  = [];      // <<< SOURCE DE VÉRITÉ (rectangles libres)
-let idSuivant     = 1;       // numérotation des tables
-let idSuivantRect = 1;       // numérotation des rectangles
-let selection     = null;    // { type:"table"|"rect", id } ou null
+let planActif      = "global"; // identifiant du plan affiché au démarrage (sélecteur modifiable)
+const tables       = [];      // <<< SOURCE DE VÉRITÉ (tables rondes)
+const formes       = [];      // <<< SOURCE DE VÉRITÉ (formes libres : rect/triangle/cercle)
+let idSuivant      = 1;       // numérotation des tables
+let idSuivantForme = 1;       // numérotation des formes
+let idSuivantArbre = 1;       // numérotation interne des arbres-images posés
+let selection      = null;    // { type:"table"|"forme"|"arbre", id } ou null
 
-// 5 teintes coordonnées à la palette « Atelier Floral » (non utilisées ailleurs
-// sur le plan) pour les rectangles libres (buffet, scène, bar...).
-// { fond, bord } par couleur.
-const COULEURS_RECT = [
-  { nom:"Lin",        fond:"#E7E0D2", bord:"#C2B189" },
-  { nom:"Sauge",      fond:"#D9E0CC", bord:"#8AA277" },
-  { nom:"Terracotta", fond:"#ECD7CF", bord:"#C49A8F" },
-  { nom:"Eucalyptus", fond:"#DCE6E6", bord:"#8FAAAC" },
-  { nom:"Miel",       fond:"#F1E3C5", bord:"#C9A24B" },
+/* ---- Arbres-images (illustrations PNG vues de dessus) ------------------ */
+// 40 éléments détourés dans assets/tree-elements/ (tree-01.png … tree-40.png),
+// numérotés 1→40 (voir la planche assets/tree-elements/_planche-reference.png).
+// On les pose comme DÉCOR sur un plan : chaque entrée d'un plan.arbresImg vaut
+// { id, n, x, y, d } où n = numéro 1→40, (x,y) = centre en cm, d = diamètre
+// affiché en cm. Purement décoratif : un arbre n'entre PAS dans tableValide.
+const DOSSIER_ARBRES = "assets/tree-elements/";
+const NB_ARBRES      = 40;
+const ARBRE_D_DEFAUT = 120;            // diamètre par défaut d'un arbre posé (cm)
+
+// URL de l'illustration n (1→40), nom à 2 chiffres (tree-07.png…).
+function urlArbre(n){
+  return DOSSIER_ARBRES + "tree-" + String(n).padStart(2, "0") + ".png";
+}
+
+// Liste (mutable) des arbres-images d'un plan ; créée à la volée si absente.
+function arbresImgDe(plan){
+  return plan.arbresImg || (plan.arbresImg = []);
+}
+
+// L'arbre-image d'id donné dans le plan affiché (ou undefined).
+function arbreImgParId(id){
+  return (PLANS[planActif].arbresImg || []).find(a => a.id === id);
+}
+
+// Donne un id stable à tout arbre écrit "en dur" dans les données (PLANS) qui
+// n'en aurait pas encore. Appelé une fois à l'initialisation.
+function normaliserArbres(){
+  for(const id in PLANS)
+    for(const a of (PLANS[id].arbresImg || []))
+      if(a.id == null) a.id = idSuivantArbre++;
+}
+
+// Palette « Atelier Floral » pour les formes libres (buffet, scène, bar...) :
+// on choisit LIBREMENT une couleur de fond ET une couleur de contour.
+const PALETTE_FORME = [
+  "#E7E0D2", "#D9E0CC", "#ECD7CF", "#DCE6E6", "#F1E3C5", "#FFFFFF",
+  "#C2B189", "#8AA277", "#C49A8F", "#8FAAAC", "#C9A24B",
+  "#5C6B57", "#BC6C4F", "#5B7790", "#3D4A39",
 ];
+const FORME_FOND_DEFAUT = "#D9E0CC";   // sauge clair
+const FORME_BORD_DEFAUT = "#8AA277";   // sauge
+
+// Sélections courantes dans la modale « Ajouter une forme ».
+let formeFond = FORME_FOND_DEFAUT;
+let formeBord = FORME_BORD_DEFAUT;
+// Numéro d'arbre sélectionné dans la modale « Choisir un arbre » (ou null).
+let arbreChoisi = null;
 
 const settings = {
   diametre:      160,  // diamètre d'une table (cm)
@@ -408,6 +512,28 @@ function contoursDe(plan){
 function translater(points, tx, ty){
   return points.map(p => [p[0] + tx, p[1] + ty]);
 }
+
+// Rotation du point (px,py) autour du centre (cx,cy), de `deg` degrés.
+// Convention SVG : angle HORAIRE positif (y vers le bas), identique à
+// l'attribut transform="rotate(deg cx cy)" — les deux restent donc cohérents.
+function roterPoint(px, py, cx, cy, deg){
+  const a = deg * Math.PI / 180, co = Math.cos(a), si = Math.sin(a);
+  const dx = px - cx, dy = py - cy;
+  return [ cx + dx*co - dy*si, cy + dx*si + dy*co ];
+}
+
+// Angle (en degrés) du vecteur centre->point, mesuré depuis le HAUT (0 = vers le
+// haut) et dans le sens HORAIRE (convention SVG). Sert à orienter un objet vers
+// le pointeur pendant un glisser de rotation.
+function angleVers(cx, cy, px, py){
+  return Math.atan2(px - cx, -(py - cy)) * 180 / Math.PI;
+}
+
+// Centre de la boîte d'une forme (x, y, w, h).
+function centreForme(f){ return [ f.x + f.w/2, f.y + f.h/2 ]; }
+
+// Ramène un angle (degrés) dans [0, 360), arrondi à l'entier.
+function normaliserAngle(deg){ return ((Math.round(deg) % 360) + 360) % 360; }
 
 
 /* ===================== 4. VALIDITÉ / COUVERTS ========================== */
@@ -489,6 +615,10 @@ function render(){
     if(z.points) debords.push(...z.points);
     else debords.push([z.rect[0], z.rect[1]], [z.rect[0]+z.rect[2], z.rect[1]+z.rect[3]]);
   }
+  for(const a of (plan.arbresImg || [])){
+    const r = (a.d || ARBRE_D_DEFAUT) / 2;
+    debords.push([a.x - r, a.y - r], [a.x + r, a.y + r]);
+  }
   for(const p of debords){
     b.minX = Math.min(b.minX, p[0]); b.minY = Math.min(b.minY, p[1]);
     b.maxX = Math.max(b.maxX, p[0]); b.maxY = Math.max(b.maxY, p[1]);
@@ -517,21 +647,31 @@ function render(){
 
   dessinerFonds(plan);                    // teintes (crème / vert / gris)
   dessinerGrille(b);                      // grille légère, découpée aux pièces
-  for(const c of contours) dessinerContour(c);   // murs de chaque pièce
-  // Contours décoratifs des fonds non praticables (ex. "Reste Jardin") : on
-  // ferme la forme par un trait. Ses arêtes hautes coïncident avec les bas des
-  // pièces utilisables (jardin/terrasse/couloir/entrée) : le tracé se superpose.
-  for(const f of (plan.fonds || [])) if(f.contour) dessinerContour(f.points);
+  // Murs par contour fermé automatique (épais) — sauf si le plan trace lui-même
+  // ses murs via plan.traits (plan global : contourAuto:false).
+  if(plan.contourAuto !== false){
+    for(const c of contours) dessinerContour(c);   // murs de chaque pièce
+    // Contours décoratifs des fonds non praticables (ex. "Reste Jardin").
+    for(const f of (plan.fonds || [])) if(f.contour) dessinerContour(f.points);
+  }
   dessinerMurs(plan.murs);                 // murs décoratifs (ex. fermer la maison)
   dessinerEtiquettes(plan.etiquettes);    // libellés de zones (ex. SALON, JARDIN)
-  dessinerZones(plan.zones);              // zones non praticables (roses, feuillages...)
+  // Zones SAUF "plant" (ses blocs passent PAR-DESSUS les traits, voir plus bas).
+  dessinerZones((plan.zones || []).filter(z => z.type !== "plant"));
+  // Traits d'épaisseur sur mesure (plan global) : moyen = contour Reste Jardin ;
+  // épais = murs + périmètre extérieur. Au-dessus des fonds et des zones décor.
+  dessinerTraits(plan.traits);
+  // Blocs "Plant" : tracés APRÈS les traits pour que le trait moyen du bas du
+  // couloir passe DERRIÈRE eux.
+  dessinerZones((plan.zones || []).filter(z => z.type === "plant"));
   dessinerArbres(plan.arbres);            // arbres ponctuels (cerisiers...)
-  dessinerPoints(plan.points);            // points fixes (repères bleus...)
+  dessinerArbresImg(plan);                // arbres-images PNG (décor posé par numéro)
+  dessinerPoints(plan.points);            // points fixes (demi-cercle Plant...) — sur les traits
   dessinerCotes(plan, contours[0]);       // cotes manuelles si fournies, sinon auto
   dessinerOuvertures(plan.ouvertures, contours);
   if(plan.coinsActifs !== false){         // numéros des coins (repères bleus)
     if(plan.coinsContinus){               // numérotation continue dédupliquée (global)
-      dessinerCoinsContinus(plan.coinsContinus, plan.coinsOverride);
+      dessinerCoinsContinus(plan.coinsContinus, plan.coinsOverride, plan.coinsMasques);
     } else {
       const visuels = plan.contoursVisuels || [plan.contourVisuel || contours[0]];
       for(const v of visuels){
@@ -540,7 +680,7 @@ function render(){
       }
     }
   }
-  dessinerRectangles();   // rectangles libres (sous les tables)
+  dessinerFormes();       // formes libres (sous les tables)
   dessinerTables();
 
   majInterface();
@@ -601,6 +741,22 @@ function dessinerMurs(murs){
   }
 }
 
+// Traits d'épaisseur sur mesure (plan global) : un plan peut définir plan.traits
+// = [{ poids:"moyen"|"epais", points:[...], ferme:bool }]. "ferme" => polygone
+// (contour fermé), sinon polyline ouverte. Sert à donner des épaisseurs
+// différentes selon les arêtes (contour Reste Jardin "moyen" vs périmètre
+// extérieur "épais"), ce que le contour fermé automatique ne permet pas.
+function dessinerTraits(traits){
+  if(!traits) return;
+  const g = el("g", {});
+  for(const t of traits){
+    const pts = t.points.map(p => p.join(",")).join(" ");
+    g.appendChild(el(t.ferme ? "polygon" : "polyline",
+      { points:pts, class:"trait-plan trait-plan--" + (t.poids || "moyen") }));
+  }
+  svg.appendChild(g);
+}
+
 // Zones non praticables (décor / obstacles) : rectangles étiquetés.
 // On n'y pose pas de tables : elles sont hors du contour praticable, donc
 // déjà invalidées par la détection de collision (sortie de mur).
@@ -622,6 +778,10 @@ function dessinerZones(zones){
       const t = el("text", { x:cx, y:cy,
         class:"zone-label zone-label--" + (z.type || "def"),
         "text-anchor":"middle", "dominant-baseline":"central" });
+      // Taille sur mesure (inline, pour l'emporter sur la règle CSS .zone-label).
+      if(z.labelTaille) t.style.fontSize = z.labelTaille + "px";
+      // Label vertical (lecture bas->haut) pour tenir dans un bloc étroit.
+      if(z.labelVertical) t.setAttribute("transform", `rotate(-90 ${cx} ${cy})`);
       t.textContent = z.label;
       svg.appendChild(t);
     }
@@ -644,6 +804,57 @@ function dessinerArbres(arbres){
       svg.appendChild(t);
     }
   }
+}
+
+// Arbres-images : illustrations PNG détourées posées en DÉCOR. L'image elle-même
+// est en pointer-events:none ; une pastille circulaire INVISIBLE (rayon = d/2)
+// capte le clic/glisser — ainsi les coins transparents de la vignette ne bloquent
+// ni la grille ni les tables. Sélectionnable, déplaçable et redimensionnable.
+function dessinerArbresImg(plan){
+  const liste = plan.arbresImg;
+  if(!liste || !liste.length) return;
+  const g = el("g", {});
+  for(const a of liste){
+    const d = a.d || ARBRE_D_DEFAUT;
+    const sel = estSelection("arbre", a.id);
+    const angle = a.angle || 0;
+
+    // Groupe pivotable : l'illustration ET ses poignées tournent d'un bloc autour
+    // du centre (a.x, a.y). (L'anneau et la zone de capture sont circulaires :
+    // la rotation ne les change pas, mais les poignées, elles, suivent l'angle.)
+    const ga = el("g", angle ? { transform:`rotate(${angle} ${a.x} ${a.y})` } : {});
+
+    // Vignette (purement visuelle). On pose href ET xlink:href pour ouvrir aussi
+    // bien via un serveur que par double-clic (file://).
+    const img = el("image", { x:a.x - d/2, y:a.y - d/2, width:d, height:d,
+      preserveAspectRatio:"xMidYMid meet", class:"arbre-img" });
+    img.setAttribute("href", urlArbre(a.n));
+    img.setAttributeNS("http://www.w3.org/1999/xlink", "xlink:href", urlArbre(a.n));
+    img.setAttribute("pointer-events", "none");
+    ga.appendChild(img);
+
+    // Anneau de sélection (visuel).
+    if(sel)
+      ga.appendChild(el("circle", { cx:a.x, cy:a.y, r:d/2, class:"arbre-img-select" }));
+
+    // Zone de capture circulaire (seul élément qui reçoit le pointeur).
+    ga.appendChild(el("circle", { cx:a.x, cy:a.y, r:d/2,
+      "data-arbre": a.id, class:"arbre-img-hit" }));
+
+    // Poignées (arbre sélectionné) : redimensionnement (sur l'anneau, à 45°,
+    // bas-droite) + ROTATION (au-dessus de l'anneau, reliée par un trait).
+    if(sel){
+      const k = Math.SQRT1_2 * d/2;
+      ga.appendChild(el("circle", { cx:a.x + k, cy:a.y + k, r:11,
+        "data-arbre-handle": a.id, class:"poignee" }));
+      const hy = a.y - d/2 - 30;                    // poignée de rotation au-dessus
+      ga.appendChild(el("line", { x1:a.x, y1:a.y - d/2, x2:a.x, y2:hy + 12,
+        class:"poignee-lien" }));
+      ga.appendChild(poigneeRotation(a.x, hy, a.id, "arbre"));
+    }
+    g.appendChild(ga);
+  }
+  svg.appendChild(g);
 }
 
 // Points fixes : repères ponctuels (petit disque plein coloré, ex. point bleu).
@@ -743,8 +954,9 @@ function dessinerCoins(poly, prefixe){
 // (ex. le bas de la terrasse = le haut du Reste Jardin) gardent le numéro du
 // premier bloc qui les revendique. Placement à l'extérieur (même bissectrice
 // que dessinerCoins). But : pouvoir désigner n'importe quel coin par « coin N ».
-function dessinerCoinsContinus(polys, overrides){
+function dessinerCoinsContinus(polys, overrides, masques){
   overrides = overrides || {};                          // { "x,y": [px, py] } : placement forcé
+  const caches = new Set(masques || []);                // "x,y" : coins NON numérotés (cachés)
   const g = el("g", {});
   const vus = new Set();                                // points déjà numérotés
   let n = 1;
@@ -755,15 +967,19 @@ function dessinerCoinsContinus(polys, overrides){
     for(let i = 0; i < poly.length; i++){
       const V = poly[i];
       const cle = V[0] + "," + V[1];
-      if(vus.has(cle)) continue;                        // déjà un numéro à ce point
+      if(vus.has(cle)) continue;                        // déjà traité à ce point
       vus.add(cle);
+      // Coin caché (ex. recouvert par le demi-cercle Plant opaque) : on ne lui
+      // donne PAS de numéro et le compteur N'AVANCE PAS → numérotation continue
+      // sans trou (les suivants se décalent pour combler).
+      if(caches.has(cle)) continue;
       const P = poly[(i - 1 + poly.length) % poly.length];
       const N = poly[(i + 1) % poly.length];
       const n1 = normaleSortante(P[0], P[1], V[0], V[1], poly);
       const n2 = normaleSortante(V[0], V[1], N[0], N[1], poly);
       let dx = n1[0] + n2[0], dy = n1[1] + n2[1];       // bissectrice sortante
       const m = Math.hypot(dx, dy) || 1; dx /= m; dy /= m;
-      // placement par défaut (extérieur), ou forcé si fourni (ex. coin 13 rentré).
+      // placement par défaut (extérieur), ou forcé si fourni (ex. coin 12 rentré).
       const pos = overrides[cle] || [V[0] + dx*off, V[1] + dy*off];
       const t = el("text", { x: pos[0], y: pos[1], class:"coin",
         "text-anchor":"middle", "dominant-baseline":"middle" });
@@ -821,6 +1037,7 @@ function dessinerEtiquettes(etiquettes){
     // seraient ignorées.
     if(e.taille)  t.style.fontSize = e.taille + "px";      // taille sur mesure
     if(e.couleur) t.style.fill     = e.couleur;            // couleur sur mesure
+    if(e.graisse) t.style.fontWeight = e.graisse;          // graisse sur mesure
     // label = chaîne (1 ligne) ou tableau de chaînes (plusieurs lignes via tspan).
     const lignes = Array.isArray(e.label) ? e.label : [e.label];
     if(lignes.length === 1){
@@ -844,37 +1061,81 @@ function estSelection(type, id){
   return selection && selection.type === type && selection.id === id;
 }
 
-// Rectangles libres (buffet, scène, bar...) : déplaçables + redimensionnables.
-function dessinerRectangles(){
+// Construit une poignée de ROTATION centrée en (hx,hy) : un disque plein olivier
+// orné d'une flèche circulaire (repère « tourner »). `type` = "forme" | "arbre" :
+// pose le data-attribut capté au pointerdown. Visuellement distincte de la
+// poignée de redimensionnement (creuse, en coin) : pleine et posée AU-DESSUS de
+// l'objet, reliée à lui par un trait (cf. dessinerFormes / dessinerArbresImg).
+function poigneeRotation(hx, hy, id, type){
+  const g = el("g", { class:"poignee-rotation-g" });
+  g.setAttribute("data-" + type + "-rotate", id);
+  g.appendChild(el("circle", { cx:hx, cy:hy, r:12, class:"poignee-rotation" }));
+  // Arc circulaire (~280°) tracé en blanc à l'intérieur du disque.
+  const r = 6, rad = deg => deg * Math.PI/180;
+  const x0 = hx + r*Math.cos(rad(40)),  y0 = hy + r*Math.sin(rad(40));
+  const x1 = hx + r*Math.cos(rad(320)), y1 = hy + r*Math.sin(rad(320));
+  g.appendChild(el("path", { class:"poignee-rotation-fleche",
+    d:`M ${x0.toFixed(1)} ${y0.toFixed(1)} A ${r} ${r} 0 1 1 ${x1.toFixed(1)} ${y1.toFixed(1)}` }));
+  return g;
+}
+
+// Formes libres (buffet, scène, bar...) : rectangle, triangle ou cercle, posées
+// sur une boîte (x, y, w, h). Déplaçables + redimensionnables. Couleurs de fond
+// et de contour choisies librement. Purement visuelles (hors tableValide).
+function dessinerFormes(){
   const g = el("g", {});
-  for(const r of rectangles){
-    if(r.planId !== planActif) continue;
-    const col = COULEURS_RECT[r.couleur] || COULEURS_RECT[0];
-    const sel = estSelection("rect", r.id);
+  for(const f of formes){
+    if(f.planId !== planActif) continue;
+    const sel = estSelection("forme", f.id);
+    const cx = f.x + f.w/2, cy = f.y + f.h/2;
+    const angle = f.angle || 0;
 
-    // Corps du rectangle (seul élément qui capte le pointeur, via data-rect).
-    g.appendChild(el("rect", { x:r.x, y:r.y, width:r.w, height:r.h, rx:5,
-      "data-rect": r.id, class:"rect" + (sel ? " rect--select" : ""),
-      fill: col.fond, stroke: col.bord }));
+    // Tout le rendu d'une forme est groupé pour pivoter d'un bloc autour de son
+    // centre (corps, titre, cotes ET poignées : elles restent solidaires de
+    // l'orientation). On ne pose le transform que si l'angle est non nul.
+    const gf = el("g", angle ? { transform:`rotate(${angle} ${cx} ${cy})` } : {});
 
-    // Titre centré.
-    if(r.titre){
-      const t = el("text", { x:r.x + r.w/2, y:r.y + r.h/2 - 13, class:"rect-titre",
+    // Corps de la forme (seul élément qui capte le pointeur, via data-forme).
+    let corps;
+    if(f.type === "cercle"){
+      corps = el("ellipse", { cx, cy, rx:f.w/2, ry:f.h/2 });
+    } else if(f.type === "triangle"){
+      const pts = [[f.x, f.y + f.h], [f.x + f.w, f.y + f.h], [cx, f.y]];
+      corps = el("polygon", { points: pts.map(p => p.join(",")).join(" ") });
+    } else {
+      corps = el("rect", { x:f.x, y:f.y, width:f.w, height:f.h, rx:5 });
+    }
+    corps.setAttribute("data-forme", f.id);
+    corps.setAttribute("class", "forme" + (sel ? " forme--select" : ""));
+    corps.setAttribute("fill", f.fond);
+    corps.setAttribute("stroke", f.bord);
+    gf.appendChild(corps);
+
+    // Titre centré (optionnel).
+    if(f.titre){
+      const t = el("text", { x:cx, y:cy - 13, class:"forme-titre",
         "text-anchor":"middle", "dominant-baseline":"central" });
-      t.textContent = r.titre;
-      g.appendChild(t);
+      t.textContent = f.titre;
+      gf.appendChild(t);
     }
     // Dimensions sous le titre.
-    const d = el("text", { x:r.x + r.w/2, y:r.y + r.h/2 + 15, class:"rect-dim",
+    const d = el("text", { x:cx, y:cy + 15, class:"forme-dim",
       "text-anchor":"middle", "dominant-baseline":"central" });
-    d.textContent = Math.round(r.w) + " × " + Math.round(r.h) + " cm";
-    g.appendChild(d);
+    d.textContent = Math.round(f.w) + " × " + Math.round(f.h) + " cm";
+    gf.appendChild(d);
 
-    // Poignée de redimensionnement (coin bas-droit) quand sélectionné.
+    // Poignées (forme sélectionnée) : redimensionnement (coin bas-droit) +
+    // ROTATION (au-dessus, reliée par un trait). Placées dans le groupe pivoté :
+    // elles suivent donc l'orientation de la forme.
     if(sel){
-      g.appendChild(el("circle", { cx:r.x + r.w, cy:r.y + r.h, r:11,
-        "data-handle": r.id, class:"rect-poignee" }));
+      gf.appendChild(el("circle", { cx:f.x + f.w, cy:f.y + f.h, r:11,
+        "data-forme-handle": f.id, class:"poignee" }));
+      const hy = f.y - 42;                          // poignée de rotation au-dessus
+      gf.appendChild(el("line", { x1:cx, y1:f.y, x2:cx, y2:hy + 12,
+        class:"poignee-lien" }));
+      gf.appendChild(poigneeRotation(cx, hy, f.id, "forme"));
     }
+    g.appendChild(gf);
   }
   svg.appendChild(g);
 }
@@ -916,25 +1177,51 @@ function majInterface(){
   document.getElementById("val-espace-chaises").textContent = settings.espaceChaises;
   document.getElementById("val-espace-mur").textContent     = settings.espaceMur;
   document.getElementById("btn-supprimer").disabled = (selection === null);
-  majEditeurRectangle();
+  majEditeurForme();
 }
 
-// L'éditeur de rectangle n'est visible que si un rectangle est sélectionné.
-// On ne réécrit pas le champ en cours d'édition (pour ne pas gêner la saisie).
-function majEditeurRectangle(){
-  const ed = document.getElementById("editeur-rect");
-  const r = rectangleSelectionne();
-  if(!r){ ed.hidden = true; return; }
+// L'éditeur de forme FLOTTANT (en haut à droite du plan) n'est visible que si une
+// forme est sélectionnée. On ne réécrit pas le champ en cours d'édition (pour ne
+// pas gêner la saisie). Les pastilles de fond/contour reflètent la forme.
+function majEditeurForme(){
+  const ed = document.getElementById("editeur-forme");
+  const f = formeSelectionnee();
+  if(!f){ ed.hidden = true; return; }
   ed.hidden = false;
   const actif = document.activeElement;
-  const tt = document.getElementById("rect-titre");
-  const tw = document.getElementById("rect-w");
-  const th = document.getElementById("rect-h");
-  if(actif !== tt) tt.value = r.titre;
-  if(actif !== tw) tw.value = Math.round(r.w);
-  if(actif !== th) th.value = Math.round(r.h);
-  for(const b of ed.querySelectorAll(".pastille-couleur"))
-    b.classList.toggle("active", +b.dataset.couleur === r.couleur);
+  const tt = document.getElementById("fe-titre");
+  const tw = document.getElementById("fe-w");
+  const th = document.getElementById("fe-h");
+  const ta = document.getElementById("fe-angle");
+  if(actif !== tt) tt.value = f.titre;
+  if(actif !== tw) tw.value = Math.round(f.w);
+  if(actif !== th) th.value = Math.round(f.h);
+  if(actif !== ta) ta.value = Math.round(f.angle || 0);   // reflète la rotation en direct
+  activerSwatch("fe-fond", f.fond);
+  activerSwatch("fe-bord", f.bord);
+}
+
+// Construit une rangée de pastilles de couleur dans le conteneur donné.
+// onPick(couleur) est appelé au clic.
+function peuplerSwatches(containerId, onPick){
+  const c = document.getElementById(containerId);
+  c.replaceChildren();
+  for(const col of PALETTE_FORME){
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "pastille-couleur";
+    b.style.background = col;
+    b.dataset.c = col;
+    b.title = col;
+    b.addEventListener("click", () => onPick(col));
+    c.appendChild(b);
+  }
+}
+
+// Marque la pastille active (couleur courante) dans un conteneur de swatches.
+function activerSwatch(containerId, couleur){
+  for(const b of document.getElementById(containerId).children)
+    b.classList.toggle("active", b.dataset.c === couleur);
 }
 
 
@@ -950,33 +1237,132 @@ function ajouterTable(){
   render();
 }
 
-function ajouterRectangle(){
-  // Apparaît près du centre de la 1re pièce praticable du plan.
+// Crée une forme (depuis la modale). opts = { type, titre, w, h, fond, bord }.
+// Apparaît près du centre de la 1re pièce praticable, en cascade légère.
+function ajouterForme(opts){
   const ctr = centroide(contoursDe(PLANS[planActif])[0]);
-  const n = rectangles.filter(r => r.planId === planActif).length;
+  const n = formes.filter(f => f.planId === planActif).length;
   const decal = (n % 6) * 30;
-  const r = { id: idSuivantRect++, planId: planActif,
-    x: Math.round(ctr[0] - 100 + decal), y: Math.round(ctr[1] - 60 + decal),
-    w: 200, h: 120, titre: "Zone", couleur: 0 };
-  rectangles.push(r);
-  selection = { type:"rect", id: r.id };
+  const w = Math.max(40, Math.round(opts.w || 200));
+  const h = Math.max(40, Math.round(opts.h || 120));
+  const f = { id: idSuivantForme++, planId: planActif, type: opts.type || "rect",
+    x: Math.round(ctr[0] - w/2 + decal), y: Math.round(ctr[1] - h/2 + decal),
+    w, h, titre: opts.titre || "", angle: 0,
+    fond: opts.fond || FORME_FOND_DEFAUT, bord: opts.bord || FORME_BORD_DEFAUT };
+  formes.push(f);
+  selection = { type:"forme", id: f.id };
   render();
+  return f;
 }
 
-// Le rectangle actuellement sélectionné, ou null.
-function rectangleSelectionne(){
-  return (selection && selection.type === "rect")
-    ? rectangles.find(x => x.id === selection.id) : null;
+// La forme actuellement sélectionnée, ou null.
+function formeSelectionnee(){
+  return (selection && selection.type === "forme")
+    ? formes.find(x => x.id === selection.id) : null;
 }
 
-// Supprime l'élément sélectionné (table OU rectangle).
+// Supprime l'élément sélectionné (table, forme OU arbre-image).
 function supprimerSelection(){
   if(!selection) return;
-  const liste = selection.type === "rect" ? rectangles : tables;
+  let liste;
+  if(selection.type === "forme")      liste = formes;
+  else if(selection.type === "arbre") liste = arbresImgDe(PLANS[planActif]);
+  else                                liste = tables;
   const i = liste.findIndex(x => x.id === selection.id);
   if(i >= 0) liste.splice(i, 1);
   selection = null;
   render();
+}
+
+
+/* ----- Arbres-images : pose par numéro (API + bouton) ------------------- */
+
+// Pose l'arbre n (1→40) sur le PLAN AFFICHÉ, centré en (x,y) cm, diamètre d cm.
+// Renvoie l'entrée créée. Pensé pour la console :  ajouterArbre(24, 1500, 900)
+// (le diamètre est optionnel). Le décor n'est PAS persistant : pour le figer,
+// recopier le résultat d'exporterArbres() dans les données (PLANS) de app.js.
+function ajouterArbre(n, x, y, d){
+  n = Math.max(1, Math.min(NB_ARBRES, Math.round(n)));
+  const a = { id: idSuivantArbre++, n, angle: 0,
+    x: Math.round(x), y: Math.round(y), d: Math.round(d || ARBRE_D_DEFAUT) };
+  arbresImgDe(PLANS[planActif]).push(a);
+  selection = { type:"arbre", id: a.id };
+  render();
+  return a;
+}
+
+// Pose l'arbre CHOISI dans la modale près du centre du plan (à déplacer ensuite
+// à la souris/au doigt). Léger décalage en cascade pour ne pas empiler.
+function poserArbreChoisi(){
+  if(!arbreChoisi) return;
+  const plan = PLANS[planActif];
+  const ctr = plan.spawn || centroide(contoursDe(plan)[0]);
+  const decal = (arbresImgDe(plan).length % 6) * 35;
+  ajouterArbre(arbreChoisi, ctr[0] + decal, ctr[1] + decal);
+  fermerModale("modal-arbre");
+}
+
+// Affiche dans la console le tableau "arbresImg" du plan courant, prêt à coller
+// dans les DONNÉES (PLANS) de app.js pour rendre le décor permanent.
+function exporterArbres(){
+  const liste = PLANS[planActif].arbresImg || [];
+  const txt = "arbresImg: [\n" +
+    liste.map(a => `      { n:${a.n}, x:${a.x}, y:${a.y}, d:${a.d} },`).join("\n") +
+    "\n    ],";
+  console.log("// plan « " + planActif + " »\n" + txt);
+  return txt;
+}
+
+// Accessibles depuis la console du navigateur.
+window.ajouterArbre   = ajouterArbre;
+window.exporterArbres = exporterArbres;
+
+
+/* ========================= 7 bis. MODALES ============================== */
+/* Ajout d'un ARBRE et d'une FORME : on passe d'abord par une modale. */
+
+function ouvrirModale(id){ document.getElementById(id).hidden = false; }
+function fermerModale(id){ document.getElementById(id).hidden = true; }
+function fermerToutesModales(){
+  for(const m of document.querySelectorAll(".modal")) m.hidden = true;
+}
+
+// Modale arbre : remet à zéro la sélection puis l'ouvre.
+function ouvrirModaleArbre(){
+  arbreChoisi = null;
+  document.getElementById("arbre-confirmer").disabled = true;
+  for(const v of document.getElementById("arbre-grille").children)
+    v.classList.remove("active");
+  ouvrirModale("modal-arbre");
+}
+
+// Modale forme : réinitialise les champs (type rectangle, couleurs par défaut,
+// 200×120, sans titre) puis l'ouvre.
+function ouvrirModaleForme(){
+  formeFond = FORME_FOND_DEFAUT;
+  formeBord = FORME_BORD_DEFAUT;
+  for(const b of document.querySelectorAll("#forme-types .forme-type"))
+    b.classList.toggle("active", b.dataset.type === "rect");
+  document.getElementById("forme-titre").value = "";
+  document.getElementById("forme-w").value = 200;
+  document.getElementById("forme-h").value = 120;
+  activerSwatch("forme-fond", formeFond);
+  activerSwatch("forme-bord", formeBord);
+  ouvrirModale("modal-forme");
+}
+
+// Valide la modale forme : lit les champs et crée la forme sur le plan.
+function creerFormeDepuisModale(){
+  const typeBtn = document.querySelector("#forme-types .forme-type.active");
+  ajouterForme({
+    type:  typeBtn ? typeBtn.dataset.type : "rect",
+    titre: document.getElementById("forme-titre").value.trim(),
+    w:     +document.getElementById("forme-w").value,
+    h:     +document.getElementById("forme-h").value,
+    fond:  formeFond,
+    bord:  formeBord,
+  });
+  fermerModale("modal-forme");
 }
 
 
@@ -998,21 +1384,56 @@ svg.addEventListener("pointerdown", e => {
   const p = ecranVersSvg(e.clientX, e.clientY);
   const cherche = sel => e.target.closest && e.target.closest(sel);
 
-  // 1) poignée de redimensionnement d'un rectangle
-  const poignee = cherche("[data-handle]");
+  // 1) poignée de redimensionnement d'une forme
+  const poignee = cherche("[data-forme-handle]");
   if(poignee){
-    const id = parseInt(poignee.getAttribute("data-handle"), 10);
-    selection = { type:"rect", id };
-    drag = { kind:"resize", id };
+    const id = parseInt(poignee.getAttribute("data-forme-handle"), 10);
+    const f = formes.find(x => x.id === id);
+    const [cx, cy] = centreForme(f);
+    // Ancre = coin haut-gauche VISUEL (pivoté), gardé fixe pendant le resize :
+    // le redimensionnement reste donc cohérent même quand la forme est tournée.
+    const A = roterPoint(f.x, f.y, cx, cy, f.angle || 0);
+    selection = { type:"forme", id };
+    drag = { kind:"resize-forme", id, ax:A[0], ay:A[1] };
     svg.setPointerCapture(e.pointerId); render(); return;
   }
-  // 2) corps d'un rectangle (déplacement)
-  const rectEl = cherche("[data-rect]");
-  if(rectEl){
-    const id = parseInt(rectEl.getAttribute("data-rect"), 10);
-    const r = rectangles.find(x => x.id === id);
-    selection = { type:"rect", id };
-    drag = { kind:"move-rect", id, dx: p.x - r.x, dy: p.y - r.y };
+  // 1 bis) poignée de redimensionnement d'un arbre-image
+  const poigneeArbre = cherche("[data-arbre-handle]");
+  if(poigneeArbre){
+    const id = parseInt(poigneeArbre.getAttribute("data-arbre-handle"), 10);
+    selection = { type:"arbre", id };
+    drag = { kind:"resize-arbre", id };
+    svg.setPointerCapture(e.pointerId); render(); return;
+  }
+  // 1 ter) poignée de ROTATION d'une forme
+  const rotForme = cherche("[data-forme-rotate]");
+  if(rotForme){
+    const id = parseInt(rotForme.getAttribute("data-forme-rotate"), 10);
+    const f = formes.find(x => x.id === id);
+    const [cx, cy] = centreForme(f);
+    selection = { type:"forme", id };
+    // offset = écart entre l'angle actuel de la forme et l'angle pointeur->centre,
+    // pour une rotation FLUIDE quel que soit l'endroit où l'on saisit la poignée
+    // (pas de saut au démarrage du glisser).
+    drag = { kind:"rotate-forme", id, offset:(f.angle || 0) - angleVers(cx, cy, p.x, p.y) };
+    svg.setPointerCapture(e.pointerId); render(); return;
+  }
+  // 1 quater) poignée de ROTATION d'un arbre-image
+  const rotArbre = cherche("[data-arbre-rotate]");
+  if(rotArbre){
+    const id = parseInt(rotArbre.getAttribute("data-arbre-rotate"), 10);
+    const a = arbreImgParId(id);
+    selection = { type:"arbre", id };
+    drag = { kind:"rotate-arbre", id, offset:(a.angle || 0) - angleVers(a.x, a.y, p.x, p.y) };
+    svg.setPointerCapture(e.pointerId); render(); return;
+  }
+  // 2) corps d'une forme (déplacement)
+  const formeEl = cherche("[data-forme]");
+  if(formeEl){
+    const id = parseInt(formeEl.getAttribute("data-forme"), 10);
+    const f = formes.find(x => x.id === id);
+    selection = { type:"forme", id };
+    drag = { kind:"move-forme", id, dx: p.x - f.x, dy: p.y - f.y };
     svg.setPointerCapture(e.pointerId); render(); return;
   }
   // 3) une table (déplacement)
@@ -1024,7 +1445,16 @@ svg.addEventListener("pointerdown", e => {
     drag = { kind:"move-table", id, dx: p.x - t.x, dy: p.y - t.y };
     svg.setPointerCapture(e.pointerId); render(); return;
   }
-  // 4) clic dans le vide => désélection
+  // 4) un arbre-image (déplacement) — sous les tables : testé après elles
+  const arbreEl = cherche("[data-arbre]");
+  if(arbreEl){
+    const id = parseInt(arbreEl.getAttribute("data-arbre"), 10);
+    const a = arbreImgParId(id);
+    selection = { type:"arbre", id };
+    drag = { kind:"move-arbre", id, dx: p.x - a.x, dy: p.y - a.y };
+    svg.setPointerCapture(e.pointerId); render(); return;
+  }
+  // 5) clic dans le vide => désélection
   if(selection){ selection = null; render(); }
 });
 
@@ -1034,13 +1464,39 @@ svg.addEventListener("pointermove", e => {
   if(drag.kind === "move-table"){
     const t = tables.find(x => x.id === drag.id);
     t.x = Math.round(p.x - drag.dx); t.y = Math.round(p.y - drag.dy);
-  } else if(drag.kind === "move-rect"){
-    const r = rectangles.find(x => x.id === drag.id);
-    r.x = Math.round(p.x - drag.dx); r.y = Math.round(p.y - drag.dy);
-  } else if(drag.kind === "resize"){
-    const r = rectangles.find(x => x.id === drag.id);
-    r.w = Math.max(40, Math.round(p.x - r.x));   // largeur mini 40 cm
-    r.h = Math.max(40, Math.round(p.y - r.y));
+  } else if(drag.kind === "move-forme"){
+    const f = formes.find(x => x.id === drag.id);
+    f.x = Math.round(p.x - drag.dx); f.y = Math.round(p.y - drag.dy);
+  } else if(drag.kind === "resize-forme"){
+    const f = formes.find(x => x.id === drag.id);
+    const ang = f.angle || 0;
+    // Pointeur ramené dans le repère LOCAL (non pivoté) autour de l'ancre (coin
+    // haut-gauche visuel, gardé fixe) : largeur/hauteur restent intuitives à
+    // toute orientation. Minimum 40 cm.
+    const pl = roterPoint(p.x, p.y, drag.ax, drag.ay, -ang);
+    const w = Math.max(40, Math.round(pl[0] - drag.ax));
+    const h = Math.max(40, Math.round(pl[1] - drag.ay));
+    // Nouveau centre = ancre + R(ang)·(w/2, h/2) ; on en déduit le coin (x, y).
+    const C = roterPoint(drag.ax + w/2, drag.ay + h/2, drag.ax, drag.ay, ang);
+    f.w = w; f.h = h;
+    f.x = Math.round(C[0] - w/2); f.y = Math.round(C[1] - h/2);
+  } else if(drag.kind === "rotate-forme"){
+    const f = formes.find(x => x.id === drag.id);
+    const [cx, cy] = centreForme(f);
+    let ang = angleVers(cx, cy, p.x, p.y) + drag.offset;
+    if(e.shiftKey) ang = Math.round(ang / 15) * 15;   // Maj enfoncée = pas de 15°
+    f.angle = normaliserAngle(ang);
+  } else if(drag.kind === "move-arbre"){
+    const a = arbreImgParId(drag.id);
+    a.x = Math.round(p.x - drag.dx); a.y = Math.round(p.y - drag.dy);
+  } else if(drag.kind === "resize-arbre"){
+    const a = arbreImgParId(drag.id);
+    a.d = Math.max(30, Math.round(2 * Math.hypot(p.x - a.x, p.y - a.y)));  // diamètre mini 30 cm
+  } else if(drag.kind === "rotate-arbre"){
+    const a = arbreImgParId(drag.id);
+    let ang = angleVers(a.x, a.y, p.x, p.y) + drag.offset;
+    if(e.shiftKey) ang = Math.round(ang / 15) * 15;
+    a.angle = normaliserAngle(ang);
   }
   render();
 });
@@ -1070,37 +1526,81 @@ function init(){
     planActif = sel.value; selection = null; drag = null; render();
   });
 
-  // Boutons.
+  // Boutons d'ajout. Table = direct (réglages partagés à gauche) ; forme & arbre
+  // passent d'abord par une modale.
   document.getElementById("btn-ajouter").addEventListener("click", ajouterTable);
-  document.getElementById("btn-ajouter-rect").addEventListener("click", ajouterRectangle);
+  document.getElementById("btn-ajouter-forme").addEventListener("click", ouvrirModaleForme);
+  document.getElementById("btn-ajouter-arbre").addEventListener("click", ouvrirModaleArbre);
   document.getElementById("btn-supprimer").addEventListener("click", supprimerSelection);
 
-  // Éditeur de rectangle : pastilles de couleur + champs titre / dimensions.
-  const conteneurCouleurs = document.getElementById("rect-couleurs");
-  COULEURS_RECT.forEach((c, i) => {
+  // Fermeture des modales : croix, clic sur le fond, bouton « Annuler », touche Échap.
+  for(const b of document.querySelectorAll("[data-close]"))
+    b.addEventListener("click", () => fermerModale(b.dataset.close));
+  document.addEventListener("keydown", e => { if(e.key === "Escape") fermerToutesModales(); });
+  // Touche Entrée dans une modale ouverte : équivaut à cliquer « Ajouter ».
+  // Forme : toujours possible (un type est sélectionné par défaut).
+  // Arbre : seulement si une vignette est sélectionnée (sinon le bouton est désactivé).
+  document.addEventListener("keydown", e => {
+    if(e.key !== "Enter") return;
+    if(!document.getElementById("modal-forme").hidden){
+      e.preventDefault();
+      creerFormeDepuisModale();
+    } else if(!document.getElementById("modal-arbre").hidden && arbreChoisi){
+      e.preventDefault();
+      poserArbreChoisi();
+    }
+  });
+
+  // --- Modale ARBRE : grille des 40 vignettes (sélection puis « Ajouter ») ---
+  const grille = document.getElementById("arbre-grille");
+  for(let n = 1; n <= NB_ARBRES; n++){
     const b = document.createElement("button");
-    b.className = "pastille-couleur";
-    b.style.background = c.fond;
-    b.style.borderColor = c.bord;
-    b.title = c.nom;
-    b.dataset.couleur = i;
+    b.type = "button"; b.className = "arbre-vignette"; b.dataset.n = n; b.title = "Arbre " + n;
+    const img = document.createElement("img");
+    img.src = urlArbre(n); img.alt = "Arbre " + n; img.loading = "lazy";
+    b.appendChild(img);
     b.addEventListener("click", () => {
-      const r = rectangleSelectionne(); if(!r) return;
-      r.couleur = i; render();
+      arbreChoisi = n;
+      for(const v of grille.children) v.classList.toggle("active", +v.dataset.n === n);
+      document.getElementById("arbre-confirmer").disabled = false;
     });
-    conteneurCouleurs.appendChild(b);
+    grille.appendChild(b);
+  }
+  document.getElementById("arbre-confirmer").addEventListener("click", poserArbreChoisi);
+
+  // --- Modale FORME : choix du type + pastilles fond/contour + validation ---
+  for(const b of document.querySelectorAll("#forme-types .forme-type"))
+    b.addEventListener("click", () => {
+      for(const x of document.querySelectorAll("#forme-types .forme-type"))
+        x.classList.toggle("active", x === b);
+    });
+  peuplerSwatches("forme-fond", c => { formeFond = c; activerSwatch("forme-fond", c); });
+  peuplerSwatches("forme-bord", c => { formeBord = c; activerSwatch("forme-bord", c); });
+  document.getElementById("forme-confirmer").addEventListener("click", creerFormeDepuisModale);
+
+  // --- Éditeur de forme FLOTTANT (visible quand une forme est sélectionnée) ---
+  document.getElementById("fe-titre").addEventListener("input", e => {
+    const f = formeSelectionnee(); if(!f) return; f.titre = e.target.value; render();
   });
-  document.getElementById("rect-titre").addEventListener("input", e => {
-    const r = rectangleSelectionne(); if(!r) return;
-    r.titre = e.target.value; render();
+  const majDimForme = (champ, prop) =>
+    document.getElementById(champ).addEventListener("input", e => {
+      const f = formeSelectionnee(); if(!f) return;
+      f[prop] = Math.max(40, Math.round(+e.target.value || 40)); render();
+    });
+  majDimForme("fe-w", "w");
+  majDimForme("fe-h", "h");
+  // Rotation : champ numérique (saisie d'un angle précis) + bouton « Remettre droit ».
+  document.getElementById("fe-angle").addEventListener("input", e => {
+    const f = formeSelectionnee(); if(!f) return;
+    f.angle = normaliserAngle(+e.target.value || 0); render();
   });
-  const majDim = (champ, prop) => document.getElementById(champ).addEventListener("input", e => {
-    const r = rectangleSelectionne(); if(!r) return;
-    r[prop] = Math.max(40, Math.round(+e.target.value || 40)); render();
+  document.getElementById("fe-angle-reset").addEventListener("click", () => {
+    const f = formeSelectionnee(); if(!f) return; f.angle = 0; render();
   });
-  majDim("rect-w", "w");
-  majDim("rect-h", "h");
-  document.getElementById("rect-suppr").addEventListener("click", supprimerSelection);
+  peuplerSwatches("fe-fond", c => { const f = formeSelectionnee(); if(!f) return; f.fond = c; render(); });
+  peuplerSwatches("fe-bord", c => { const f = formeSelectionnee(); if(!f) return; f.bord = c; render(); });
+  document.getElementById("fe-fermer").addEventListener("click", () => { selection = null; render(); });
+  document.getElementById("fe-suppr").addEventListener("click", supprimerSelection);
 
   // Réglages (chaque changement => render()).
   const rngD = document.getElementById("rng-diametre");
@@ -1133,6 +1633,7 @@ function init(){
     }
   });
 
+  normaliserArbres();                                // ids stables pour le décor "en dur"
   render();
   appliquerZoom();                                   // dimensionne le SVG au démarrage
   window.addEventListener("resize", appliquerZoom);  // garde la taille de base à jour

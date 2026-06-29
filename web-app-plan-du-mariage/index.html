@@ -10,16 +10,6 @@
 
   <header class="entete">
     <div class="entete__brand">
-      <span class="marque" aria-hidden="true">
-        <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="20" cy="20" r="15" fill="none" stroke="#5C6B57" stroke-width="1.5"/>
-          <path d="M20 7.5 C 21.8 14, 21.8 26, 20 32.5" fill="none" stroke="#5C6B57" stroke-width="1.3" stroke-linecap="round"/>
-          <path d="M20 13.5 C 23 12.4, 25.6 12.6, 27.4 10.6 C 24.2 10.2, 21.4 11, 20 13.5 Z" fill="#8DA17C"/>
-          <path d="M20 20 C 17 18.9, 14.4 19.1, 12.6 17.1 C 15.8 16.7, 18.6 17.5, 20 20 Z" fill="#8DA17C"/>
-          <path d="M20 26.5 C 23 25.4, 25.6 25.6, 27.4 23.6 C 24.2 23.2, 21.4 24, 20 26.5 Z" fill="#A7B898"/>
-          <circle cx="20" cy="20" r="1.7" fill="#B8923C"/>
-        </svg>
-      </span>
       <h1>Plan du mariage</h1>
     </div>
     <div class="entete__plan">
@@ -38,59 +28,48 @@
         <input type="range" id="rng-zoom" min="100" max="400" step="10" value="100">
       </section>
 
-      <div class="bloc-actions">
+      <!-- TABLES : fonction première — bouton + réglages partagés regroupés -->
+      <section class="carte-tables">
         <button id="btn-ajouter" class="btn btn--principal">
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.2"/><path d="M12 8.6v6.8M8.6 12h6.8"/></svg>
           <span>Ajouter une table</span>
         </button>
-        <button id="btn-ajouter-rect" class="btn btn--rect">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="1.6"/><path d="M8.5 12h7"/></svg>
-          <span>Ajouter un rectangle</span>
-        </button>
-        <button id="btn-supprimer" class="btn btn--secondaire" disabled>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l.9 12.2a1 1 0 0 0 1 .8h7.2a1 1 0 0 0 1-.8L17.5 7"/></svg>
-          <span>Supprimer la sélection</span>
-        </button>
-      </div>
 
-      <!-- Éditeur de rectangle : affiché quand un rectangle est sélectionné -->
-      <section id="editeur-rect" class="editeur" hidden>
-        <h2>Rectangle</h2>
-        <label class="champ">Titre
-          <input type="text" id="rect-titre" maxlength="24" placeholder="ex. Buffet, Scène, Bar…">
-        </label>
-        <div class="champ-dims">
-          <label>Largeur <input type="number" id="rect-w" min="40" step="10"> cm</label>
-          <label>Hauteur <input type="number" id="rect-h" min="40" step="10"> cm</label>
+        <div class="reglage">
+          <label for="rng-diametre">Diamètre des tables : <strong id="val-diametre"></strong> cm</label>
+          <input type="range" id="rng-diametre" min="100" max="240" step="10">
         </div>
-        <div class="champ">Couleur
-          <div class="couleurs" id="rect-couleurs"></div>
+        <div class="reglage">
+          <label for="rng-espace-chaises">Espace pour les chaises <span class="reglage__hint">(autour de chaque table)</span> : <strong id="val-espace-chaises"></strong> cm</label>
+          <input type="range" id="rng-espace-chaises" min="0" max="100" step="5">
         </div>
-        <button id="rect-suppr" class="btn btn--secondaire">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l.9 12.2a1 1 0 0 0 1 .8h7.2a1 1 0 0 0 1-.8L17.5 7"/></svg>
-          <span>Supprimer ce rectangle</span>
-        </button>
-      </section>
-
-      <section class="reglage">
-        <label for="rng-diametre">Diamètre des tables : <strong id="val-diametre"></strong> cm</label>
-        <input type="range" id="rng-diametre" min="100" max="240" step="10">
-      </section>
-
-      <section class="reglage">
-        <label for="rng-espace-chaises">Espace pour les chaises <span class="reglage__hint">(autour de chaque table)</span> : <strong id="val-espace-chaises"></strong> cm</label>
-        <input type="range" id="rng-espace-chaises" min="0" max="100" step="5">
-      </section>
-
-      <section class="reglage">
-        <label for="rng-espace-mur">Espace table / mur : <strong id="val-espace-mur"></strong> cm</label>
-        <input type="range" id="rng-espace-mur" min="0" max="150" step="5">
+        <div class="reglage">
+          <label for="rng-espace-mur">Espace table / mur : <strong id="val-espace-mur"></strong> cm</label>
+          <input type="range" id="rng-espace-mur" min="0" max="150" step="5">
+        </div>
       </section>
 
       <section class="compteur">
         <div class="compteur__ligne"><span id="nb-tables" class="compteur__chiffre">0</span> table(s) valide(s)</div>
         <div class="compteur__ligne"><span id="nb-couverts" class="compteur__chiffre">0</span> couverts estimés</div>
       </section>
+
+      <!-- DÉCOR : formes & arbres (chacun passe par une modale) -->
+      <div class="bloc-actions">
+        <button id="btn-ajouter-forme" class="btn btn--rect">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="9" height="9" rx="1.4"/><circle cx="16.5" cy="9" r="4.3"/></svg>
+          <span>Ajouter une forme</span>
+        </button>
+        <button id="btn-ajouter-arbre" class="btn btn--rect">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0-3 11.2V18h6v-3.8A6 6 0 0 0 12 3Z"/><path d="M10 21h4"/></svg>
+          <span>Ajouter un arbre</span>
+        </button>
+      </div>
+
+      <button id="btn-supprimer" class="btn btn--secondaire" disabled>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l.9 12.2a1 1 0 0 0 1 .8h7.2a1 1 0 0 0 1-.8L17.5 7"/></svg>
+        <span>Supprimer la sélection</span>
+      </button>
 
       <section class="legende">
         <h2>Légende</h2>
@@ -102,7 +81,8 @@
           <li><span class="trait trait--pf"></span> Porte-fenêtre</li>
           <li><span class="trait trait--porte"></span> Porte</li>
         </ul>
-        <p class="aide">Glissez une table à la souris ou au doigt. Évitez de bloquer les ouvertures (traits colorés). Touche Suppr pour effacer la table sélectionnée.</p>
+        <p class="aide">Glissez une table à la souris ou au doigt. Évitez de bloquer les ouvertures (traits colorés). Touche Suppr pour effacer la sélection.</p>
+        <p class="aide">Sélectionnez une forme ou un arbre : la poignée <strong>creuse</strong> (coin bas-droit) redimensionne, la poignée <strong>pleine</strong> (au-dessus) fait pivoter. Maintenez <strong>Maj</strong> pour un pas de 15°.</p>
       </section>
 
     </aside>
@@ -110,9 +90,109 @@
     <!-- Zone de dessin : le SVG est rempli par render() dans app.js -->
     <div class="scene">
       <svg id="plan" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
+
+      <!-- Éditeur flottant : affiché en haut à droite, par-dessus le plan,
+           quand une FORME est sélectionnée. -->
+      <aside id="editeur-forme" class="editeur-flottant" hidden>
+        <button id="fe-fermer" class="modal__close" type="button" aria-label="Fermer">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+        <h2>Forme</h2>
+        <label class="champ">Titre
+          <input type="text" id="fe-titre" maxlength="24" placeholder="ex. Buffet, Scène, Bar…">
+        </label>
+        <div class="champ-dims">
+          <label>Largeur <input type="number" id="fe-w" min="40" step="10"> cm</label>
+          <label>Hauteur <input type="number" id="fe-h" min="40" step="10"> cm</label>
+        </div>
+        <div class="champ-rotation">
+          <label>Rotation <input type="number" id="fe-angle" min="0" max="359" step="1"> °</label>
+          <button id="fe-angle-reset" class="btn-mini" type="button" title="Remettre la forme droite (0°)">Remettre droit</button>
+        </div>
+        <div class="champ">Fond
+          <div class="couleurs" id="fe-fond"></div>
+        </div>
+        <div class="champ">Contour
+          <div class="couleurs" id="fe-bord"></div>
+        </div>
+        <button id="fe-suppr" class="btn btn--secondaire">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l.9 12.2a1 1 0 0 0 1 .8h7.2a1 1 0 0 0 1-.8L17.5 7"/></svg>
+          <span>Supprimer cette forme</span>
+        </button>
+      </aside>
     </div>
 
   </main>
+
+  <!-- ===================== MODALE : choisir un arbre ===================== -->
+  <div id="modal-arbre" class="modal" hidden>
+    <div class="modal__overlay" data-close="modal-arbre"></div>
+    <div class="modal__dialog modal__dialog--large" role="dialog" aria-modal="true" aria-labelledby="modal-arbre-titre">
+      <button class="modal__close" type="button" data-close="modal-arbre" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <h2 id="modal-arbre-titre">Choisir un arbre</h2>
+      <p class="modal__hint">Cliquez une illustration, puis « Ajouter ». Vous pourrez l'agrandir/réduire ensuite sur le plan.</p>
+      <div class="modal__body">
+        <div id="arbre-grille" class="arbre-grille"></div>
+      </div>
+      <div class="modal__actions">
+        <button class="btn btn--secondaire" type="button" data-close="modal-arbre">Annuler</button>
+        <button id="arbre-confirmer" class="btn btn--principal" type="button" disabled>Ajouter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== MODALE : ajouter une forme ==================== -->
+  <div id="modal-forme" class="modal" hidden>
+    <div class="modal__overlay" data-close="modal-forme"></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="modal-forme-titre">
+      <button class="modal__close" type="button" data-close="modal-forme" aria-label="Fermer">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <h2 id="modal-forme-titre">Ajouter une forme</h2>
+
+      <div class="modal__body">
+      <div class="champ">Type
+        <div class="formes-types" id="forme-types">
+          <button class="forme-type active" type="button" data-type="rect">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="1.6"/></svg>
+            <span>Rectangle</span>
+          </button>
+          <button class="forme-type" type="button" data-type="triangle">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><path d="M12 4 21 19 3 19 Z"/></svg>
+            <span>Triangle</span>
+          </button>
+          <button class="forme-type" type="button" data-type="cercle">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>
+            <span>Cercle</span>
+          </button>
+        </div>
+      </div>
+
+      <label class="champ">Titre (optionnel)
+        <input type="text" id="forme-titre" maxlength="24" placeholder="ex. Buffet, Scène, Bar…">
+      </label>
+
+      <div class="champ-dims">
+        <label>Largeur <input type="number" id="forme-w" min="40" step="10" value="200"> cm</label>
+        <label>Hauteur <input type="number" id="forme-h" min="40" step="10" value="120"> cm</label>
+      </div>
+
+      <div class="champ">Couleur du fond
+        <div class="couleurs" id="forme-fond"></div>
+      </div>
+      <div class="champ">Couleur du contour
+        <div class="couleurs" id="forme-bord"></div>
+      </div>
+      </div>
+
+      <div class="modal__actions">
+        <button class="btn btn--secondaire" type="button" data-close="modal-forme">Annuler</button>
+        <button id="forme-confirmer" class="btn btn--principal" type="button">Ajouter</button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

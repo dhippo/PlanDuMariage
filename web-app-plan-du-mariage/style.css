@@ -157,16 +157,17 @@ select:focus, input[type=text]:focus, input[type=number]:focus{
 .btn--secondaire:hover{ background:#F1EBDF; border-color:#E0D6C4; }
 .btn:disabled{ opacity:.4; cursor:not-allowed; }
 
-/* --------------------------- Éditeur rectangle ------------------------ */
-/* Correctif : l'attribut [hidden] doit l'emporter sur display:flex. */
-.editeur[hidden]{ display:none !important; }
-.editeur{
-  background:var(--papier); border:1px solid var(--ligne);
-  border-radius:var(--r-md); padding:16px 17px;
-  display:flex; flex-direction:column; gap:13px;
+/* ------------------- Éditeur de forme (flottant) ---------------------- */
+/* Affiché EN OVERLAY en haut à droite du plan quand une forme est sélectionnée. */
+.editeur-flottant[hidden]{ display:none !important; }
+.editeur-flottant{
+  position:absolute; top:30px; right:30px; z-index:10; width:250px;
+  background:var(--papier); border:1px solid var(--ligne); border-top:3px solid var(--ligne-or);
+  border-radius:var(--r-md); padding:16px 17px 17px;
+  display:flex; flex-direction:column; gap:12px;
   box-shadow:var(--sh-2);
 }
-.editeur h2{
+.editeur-flottant h2{
   font-family:"Cormorant Garamond", serif; font-size:18px; font-weight:600;
   margin:0; color:var(--encre); letter-spacing:.3px;
 }
@@ -177,10 +178,21 @@ select:focus, input[type=text]:focus, input[type=number]:focus{
 .champ-dims label{ flex:1; display:flex; flex-direction:column; gap:5px;
   font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--encre-3); }
 .champ-dims input{ width:100%; padding:8px 10px; font-size:14px; }
-.couleurs{ display:flex; gap:9px; margin-top:3px; }
+/* Ligne « Rotation » : champ d'angle + bouton « Remettre droit ». */
+.champ-rotation{ display:flex; gap:10px; align-items:flex-end; }
+.champ-rotation label{ flex:1; display:flex; flex-direction:column; gap:5px;
+  font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--encre-3); }
+.champ-rotation input{ width:100%; padding:8px 10px; font-size:14px; }
+.btn-mini{ flex:none; padding:8px 11px; font-size:11px; font-weight:600;
+  letter-spacing:.04em; color:var(--olivier); background:transparent;
+  border:1px solid var(--olivier); border-radius:var(--r-sm); cursor:pointer;
+  white-space:nowrap; transition:background .14s; }
+.btn-mini:hover{ background:var(--olivier-clair); }
+.couleurs{ display:flex; flex-wrap:wrap; gap:8px; margin-top:3px; }
 .pastille-couleur{
-  width:30px; height:30px; border-radius:50%;
-  border:2px solid; padding:0; cursor:pointer; transition:transform .12s, box-shadow .12s;
+  width:26px; height:26px; border-radius:50%;
+  border:2px solid rgba(60,50,40,.18); padding:0; cursor:pointer;
+  transition:transform .12s, box-shadow .12s;
 }
 .pastille-couleur:hover{ transform:scale(1.12); }
 .pastille-couleur.active{ box-shadow:0 0 0 2px var(--papier), 0 0 0 4px var(--olivier); }
@@ -264,6 +276,11 @@ input[type=range]::-moz-range-thumb{
 .fond--entree{ fill:var(--dalle); }
 .fond--maison-reste{ fill:#FFFFFF; }
 .piece-contour{ fill:none; stroke:var(--mur); stroke-width:5; stroke-linejoin:miter; pointer-events:none; }
+/* Traits d'épaisseur sur mesure (plan global) : moyen = contours internes
+   (Reste Jardin) ; épais = murs réels + périmètre extérieur. */
+.trait-plan{ fill:none; stroke:var(--mur); stroke-linejoin:miter; stroke-linecap:square; pointer-events:none; }
+.trait-plan--moyen{ stroke-width:3; }
+.trait-plan--epais{ stroke-width:5; }
 .mur{ fill:none; stroke:var(--mur); stroke-width:5; stroke-linejoin:miter; stroke-linecap:square; pointer-events:none; }
 
 .zone--rose{ fill:url(#hachures-rose); stroke:var(--dalle-bord); stroke-width:2; }
@@ -283,11 +300,19 @@ input[type=range]::-moz-range-thumb{
 .arbre--orange{ fill:#E7CDA8; stroke:#BC6C4F; }
 .arbre-emoji{ pointer-events:none; user-select:none; }
 
+/* Arbres-images (illustrations PNG posées en décor). La vignette est en
+   pointer-events:none (cf. app.js) ; .arbre-img-hit est la pastille circulaire
+   transparente qui capte le clic/glisser. .arbre-img-select = anneau de sélection. */
+.arbre-img{ user-select:none; }
+.arbre-img-hit{ fill:transparent; cursor:grab; }
+.arbre-img-select{ fill:none; stroke:var(--olivier); stroke-width:2.5;
+  stroke-dasharray:7 6; pointer-events:none; }
+
 .point{ stroke-width:2.5; pointer-events:none; }
 .point--bleu{ fill:#5B7790; stroke:#3F586B; }
 .point-halo{ pointer-events:none; }
 .point-halo--bleu{ fill:rgba(91,119,144,.09); stroke:rgba(91,119,144,.30); stroke-width:1.5; }
-.point-halo--plant{ fill:rgba(122,150,98,.20); stroke:#5C6B57; stroke-width:2; }
+.point-halo--plant{ fill:#A9C28C; stroke:#5C6B57; stroke-width:2; }  /* opaque, = bloc Plant (.zone--plant) */
 
 .cote{ fill:var(--cote); font-size:17px; font-weight:500; font-family:"Inter",sans-serif;
   pointer-events:none; user-select:none; }
@@ -322,13 +347,96 @@ input[type=range]::-moz-range-thumb{
 .table-num{ fill:#33302A; font-size:30px; font-weight:700; font-family:"Inter",sans-serif;
   pointer-events:none; user-select:none; }
 
-.rect{ stroke-width:2.5; cursor:grab; }
-.rect--select{ stroke-width:4.5; }
-.rect-titre{ fill:#332F28; font-size:30px; font-weight:700; font-family:"Inter",sans-serif;
+/* Formes libres (rectangle / triangle / cercle) : déplaçables + redimensionnables. */
+.forme{ stroke-width:2.5; cursor:grab; }
+.forme--select{ stroke-width:4.5; }
+.forme-titre{ fill:#332F28; font-size:30px; font-weight:700; font-family:"Inter",sans-serif;
   pointer-events:none; user-select:none; }
-.rect-dim{ fill:#6F665A; font-size:20px; font-family:"Inter",sans-serif;
+.forme-dim{ fill:#6F665A; font-size:20px; font-family:"Inter",sans-serif;
   pointer-events:none; user-select:none; }
-.rect-poignee{ fill:#FFFFFF; stroke:var(--olivier); stroke-width:3; cursor:nwse-resize; }
+/* Poignée de redimensionnement (formes ET arbres-images). */
+.poignee{ fill:#FFFFFF; stroke:var(--olivier); stroke-width:3; cursor:nwse-resize; }
+
+/* Poignée de ROTATION (formes & arbres) : disque PLEIN posé au-dessus de l'objet,
+   relié par un trait pointillé. Distincte de la poignée de redimensionnement
+   (creuse, en coin) pour qu'on ne les confonde pas. */
+.poignee-lien{ stroke:var(--olivier); stroke-width:2; stroke-dasharray:3 4;
+  opacity:.65; pointer-events:none; }
+.poignee-rotation-g{ cursor:grab; }
+.poignee-rotation-g:active{ cursor:grabbing; }
+.poignee-rotation{ fill:var(--olivier); stroke:#FFFFFF; stroke-width:2.5; }
+.poignee-rotation-fleche{ fill:none; stroke:#FFFFFF; stroke-width:2;
+  stroke-linecap:round; pointer-events:none; }
+
+/* ----------------------- Carte "Tables" (panneau) --------------------- */
+.carte-tables{
+  background:var(--papier); border:1px solid var(--ligne);
+  border-radius:var(--r-md); padding:15px 16px;
+  display:flex; flex-direction:column; gap:14px; box-shadow:var(--sh-1);
+}
+.carte-tables .btn--principal{ width:100%; }
+
+/* ------------------------------- Modales ------------------------------ */
+.modal[hidden]{ display:none !important; }
+.modal{
+  position:fixed; inset:0; z-index:50;
+  display:flex; align-items:center; justify-content:center; padding:24px;
+}
+.modal__overlay{ position:absolute; inset:0; background:rgba(44,40,35,.45); backdrop-filter:blur(2px); }
+.modal__dialog{
+  position:relative; z-index:1;
+  width:430px; max-width:100%; max-height:88vh; overflow:hidden;
+  background:var(--papier); border:1px solid var(--ligne); border-top:3px solid var(--ligne-or);
+  border-radius:var(--r-lg); padding:24px 26px;
+  display:flex; flex-direction:column; gap:15px; box-shadow:var(--sh-2);
+}
+.modal__dialog--large{ width:700px; }
+/* Corps DÉFILANT : seul le contenu scrolle, l'en-tête et les boutons restent fixes
+   (sinon « Annuler / Ajouter » passent par-dessus la grille). */
+.modal__body{
+  flex:1; min-height:0; overflow-y:auto;
+  display:flex; flex-direction:column; gap:15px;
+  padding:2px 4px; margin:0 -4px;
+}
+.modal__dialog h2{
+  font-family:"Cormorant Garamond", serif; font-size:23px; font-weight:600;
+  margin:0; color:var(--encre); letter-spacing:.3px;
+}
+.modal__hint{ font-size:12.5px; color:var(--encre-3); margin:-9px 0 0; line-height:1.5; }
+.modal__close{
+  position:absolute; top:12px; right:12px; width:32px; height:32px;
+  display:inline-flex; align-items:center; justify-content:center;
+  border:none; background:transparent; color:var(--encre-2);
+  border-radius:50%; cursor:pointer; transition:background .14s, color .14s;
+}
+.modal__close:hover{ background:var(--ivoire); color:var(--encre); }
+.modal__actions{ display:flex; justify-content:flex-end; gap:10px;
+  padding-top:15px; border-top:1px solid var(--ligne); }
+.modal__actions .btn{ min-width:118px; }
+
+/* Grille des 40 arbres (modale arbre) */
+.arbre-grille{ display:grid; grid-template-columns:repeat(8, 1fr); gap:8px; }
+.arbre-vignette{
+  aspect-ratio:1; padding:5px; border:1px solid var(--ligne); border-radius:var(--r-sm);
+  background:var(--ivoire-2); cursor:pointer;
+  transition:border-color .12s, box-shadow .12s, transform .08s, background .12s;
+}
+.arbre-vignette img{ width:100%; height:100%; object-fit:contain; display:block; pointer-events:none; }
+.arbre-vignette:hover{ border-color:var(--olivier); transform:translateY(-1px); }
+.arbre-vignette.active{ border-color:var(--olivier); box-shadow:0 0 0 2px var(--olivier); background:var(--olivier-clair); }
+
+/* Sélecteur de type de forme (modale forme) */
+.formes-types{ display:flex; gap:8px; }
+.forme-type{
+  flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;
+  padding:12px 6px; border:1px solid var(--ligne); border-radius:var(--r-sm);
+  background:var(--papier); cursor:pointer; color:var(--encre-2);
+  font-family:inherit; font-size:12px; font-weight:600;
+  transition:border-color .12s, background .12s, color .12s, box-shadow .12s;
+}
+.forme-type:hover{ border-color:var(--olivier); }
+.forme-type.active{ border-color:var(--olivier); background:var(--olivier-clair);
+  color:var(--encre); box-shadow:0 0 0 1px var(--olivier) inset; }
 
 /* ------------------------- Petit écran -------------------------------- */
 @media (max-width:760px){
@@ -340,4 +448,7 @@ input[type=range]::-moz-range-thumb{
   .entete{ padding:14px 18px; }
   .entete h1{ font-size:23px; }
   .entete__plan select{ min-width:150px; }
+  .editeur-flottant{ top:14px; right:14px; width:210px; }
+  .modal__dialog--large{ width:100%; }
+  .arbre-grille{ grid-template-columns:repeat(5, 1fr); }
 }
