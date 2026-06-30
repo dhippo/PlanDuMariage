@@ -20,8 +20,18 @@
 
   <main class="appli">
 
-    <!-- Panneau latéral : actions, réglages, compteur, légende -->
+    <!-- Panneau latéral : actions, réglages, compteur, légende.
+         Sur mobile, il devient une feuille coulissante (bottom sheet) ouverte
+         depuis la barre d'outils du bas (bouton « Réglages »). -->
     <aside class="panneau">
+
+      <!-- En-tête de la feuille mobile : titre + fermeture (caché sur desktop). -->
+      <div class="sheet-tete">
+        <span class="sheet-titre">Réglages</span>
+        <button id="btn-fermer-reglages" class="sheet-close" type="button" aria-label="Fermer les réglages">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
 
       <section class="reglage reglage--zoom">
         <label for="rng-zoom">Zoom du plan : <strong id="val-zoom">100</strong> %</label>
@@ -124,6 +134,36 @@
 
   </main>
 
+  <!-- ===================== BARRE D'OUTILS (mobile) =======================
+       Visible uniquement sur petit écran (display:none sur desktop). Reprend
+       les actions principales + ouvre la feuille « Réglages ». Les boutons
+       appellent les MÊMES fonctions que ceux du panneau. -->
+  <nav class="barre-mobile" aria-label="Outils">
+    <button id="btn-m-table" class="barre-btn" type="button">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7.2"/><path d="M12 8.6v6.8M8.6 12h6.8"/></svg>
+      <span>Table</span>
+    </button>
+    <button id="btn-m-forme" class="barre-btn" type="button">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="9" height="9" rx="1.4"/><circle cx="16.5" cy="9" r="4.3"/></svg>
+      <span>Forme</span>
+    </button>
+    <button id="btn-m-arbre" class="barre-btn" type="button">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0-3 11.2V18h6v-3.8A6 6 0 0 0 12 3Z"/><path d="M10 21h4"/></svg>
+      <span>Arbre</span>
+    </button>
+    <button id="btn-m-suppr" class="barre-btn" type="button" disabled>
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l.9 12.2a1 1 0 0 0 1 .8h7.2a1 1 0 0 0 1-.8L17.5 7"/></svg>
+      <span>Supprimer</span>
+    </button>
+    <button id="btn-m-reglages" class="barre-btn" type="button">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h9M17 8h2M5 16h2M11 16h8"/><circle cx="15" cy="8" r="2.1"/><circle cx="9" cy="16" r="2.1"/></svg>
+      <span>Réglages</span>
+    </button>
+  </nav>
+
+  <!-- Fond sombre derrière la feuille « Réglages » (mobile) : ferme au clic. -->
+  <div id="sheet-backdrop" class="sheet-backdrop" hidden></div>
+
   <!-- ===================== MODALE : choisir un arbre ===================== -->
   <div id="modal-arbre" class="modal" hidden>
     <div class="modal__overlay" data-close="modal-arbre"></div>
@@ -194,6 +234,21 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <!-- Scripts classiques chargés DANS L'ORDRE (portée globale partagée, aucun build).
+       Voir js/00-STRUCTURE.md pour le rôle de chaque fichier et les contraintes d'ordre.
+       L'ordre est important : 01 avant 02 (PLANS.global utilise translater au chargement),
+       05 avant 11 (les gestes posent des écouteurs sur svg/scene), 12 en dernier. -->
+  <script src="js/01-geometrie.js"></script>
+  <script src="js/02-plans.js"></script>
+  <script src="js/03-etat.js"></script>
+  <script src="js/04-validite.js"></script>
+  <script src="js/05-rendu-base.js"></script>
+  <script src="js/06-rendu-plan.js"></script>
+  <script src="js/07-rendu-objets.js"></script>
+  <script src="js/08-interface.js"></script>
+  <script src="js/09-actions.js"></script>
+  <script src="js/10-modales.js"></script>
+  <script src="js/11-gestes.js"></script>
+  <script src="js/12-init.js"></script>
 </body>
 </html>

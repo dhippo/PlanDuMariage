@@ -255,7 +255,17 @@ input[type=range]::-moz-range-thumb{
   padding-top:13px; border-top:1px solid var(--ligne); }
 
 /* -------------------------------- Scène ------------------------------- */
-.scene{ flex:1; min-width:0; min-height:0; padding:20px; position:relative; overflow:hidden; }
+/* touch-action:none → le plan capte lui-même les gestes tactiles (glisser,
+   pan, pinch) ; le scroll/zoom natif du navigateur ne s'en mêle pas. Le pan
+   et le pinch sont gérés en JS (appliquerZoom + scrollLeft/Top). N'affecte
+   que le tactile : sur desktop la molette/trackpad continue de fonctionner. */
+.scene{ flex:1; min-width:0; min-height:0; padding:20px; position:relative; overflow:hidden; touch-action:none; }
+
+/* Chrome propre au mobile : masqué par défaut (affiché dans la media query). */
+.barre-mobile{ display:none; }
+.sheet-tete{ display:none; }
+.sheet-backdrop{ display:none; }
+.sheet-backdrop[hidden]{ display:none; }
 #plan{
   display:block; background:var(--salon);
   border:1px solid var(--ligne); border-radius:var(--r-lg);
@@ -379,7 +389,7 @@ input[type=range]::-moz-range-thumb{
 /* ------------------------------- Modales ------------------------------ */
 .modal[hidden]{ display:none !important; }
 .modal{
-  position:fixed; inset:0; z-index:50;
+  position:fixed; inset:0; z-index:70;   /* au-dessus des feuilles mobiles (panneau 60, éditeur 65) */
   display:flex; align-items:center; justify-content:center; padding:24px;
 }
 .modal__overlay{ position:absolute; inset:0; background:rgba(44,40,35,.45); backdrop-filter:blur(2px); }
@@ -438,17 +448,99 @@ input[type=range]::-moz-range-thumb{
 .forme-type.active{ border-color:var(--olivier); background:var(--olivier-clair);
   color:var(--encre); box-shadow:0 0 0 1px var(--olivier) inset; }
 
-/* ------------------------- Petit écran -------------------------------- */
+/* ========================== Petit écran (mobile) =======================
+   App-shell plein écran : header en haut, PLAN juste en dessous (occupe tout
+   l'espace), barre d'outils en bas. Plus de scroll de page. Le panneau de
+   réglages et l'éditeur de forme deviennent des feuilles coulissantes (bottom
+   sheets) à l'échelle de l'ÉCRAN (et non dans le cadre du plan). Le zoom se
+   fait au doigt (pinch) : le curseur de zoom est retiré. */
 @media (max-width:760px){
-  html,body{ height:auto; }
-  body{ overflow:auto; }
-  .appli{ flex-direction:column; }
-  .panneau{ width:100%; border-right:none; border-bottom:1px solid var(--ligne); }
-  .scene{ flex:none; height:60vh; }
-  .entete{ padding:14px 18px; }
-  .entete h1{ font-size:23px; }
-  .entete__plan select{ min-width:150px; }
-  .editeur-flottant{ top:14px; right:14px; width:210px; }
-  .modal__dialog--large{ width:100%; }
-  .arbre-grille{ grid-template-columns:repeat(5, 1fr); }
+  html,body{ height:100%; }
+  body{ overflow:hidden; }
+
+  .appli{ flex-direction:column; min-height:0; }
+
+  /* Le plan passe JUSTE SOUS le header et remplit l'espace disponible.
+     (flex:1 + min-height:0 → hauteur déduite du viewport, pas du SVG : pas de
+     boucle avec appliquerZoom, qui mesure .scene.) */
+  .scene{ flex:1; height:auto; min-height:0; padding:10px; }
+
+  /* En-tête compact. */
+  .entete{ padding:11px 15px; }
+  .entete h1{ font-size:20px; }
+  .entete__plan label{ display:none; }            /* on gagne de la place */
+  .entete__plan select{ min-width:140px; padding:8px 30px 8px 12px; }
+
+  /* ----------------------- Barre d'outils du bas ---------------------- */
+  .barre-mobile{
+    display:flex; flex:none;
+    justify-content:space-around; align-items:stretch; gap:2px;
+    padding:5px 6px calc(5px + env(safe-area-inset-bottom));
+    background:var(--papier); border-top:1px solid var(--ligne);
+    box-shadow:0 -2px 14px rgba(70,58,42,.08); z-index:30;
+  }
+  .barre-btn{
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:7px 2px; border:none; background:transparent; cursor:pointer;
+    color:var(--encre-2); font-family:inherit; font-size:10.5px; font-weight:600;
+    border-radius:var(--r-sm); transition:background .14s, color .14s;
+  }
+  .barre-btn:active{ background:var(--ivoire); }
+  .barre-btn:disabled{ opacity:.36; }
+  #btn-m-table{ color:var(--olivier); }           /* action première, mise en avant */
+
+  /* ------------- Panneau = feuille coulissante (bottom sheet) --------- */
+  .panneau{
+    position:fixed; left:0; right:0; bottom:0; top:auto; z-index:60;
+    width:100%; max-height:82vh; overflow-y:auto;
+    border:none; border-top:1px solid var(--ligne); border-radius:18px 18px 0 0;
+    box-shadow:0 -10px 40px rgba(60,50,40,.22);
+    padding:0 18px calc(20px + env(safe-area-inset-bottom));
+    gap:16px;
+    transform:translateY(110%); transition:transform .28s ease;
+    overscroll-behavior:contain;
+  }
+  body.reglages-ouverts .panneau{ transform:translateY(0); }
+
+  .sheet-tete{
+    display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:1; margin:0 -18px 2px; padding:11px 16px 9px;
+    background:var(--ivoire-2); border-bottom:1px solid var(--ligne);
+  }
+  .sheet-titre{ font-family:"Cormorant Garamond", serif; font-size:20px;
+    font-weight:600; color:var(--encre); letter-spacing:.3px; }
+  .sheet-close{
+    width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center;
+    border:none; background:transparent; color:var(--encre-2); border-radius:50%; cursor:pointer;
+  }
+  .sheet-close:active{ background:var(--ivoire); }
+
+  /* Zoom retiré sur mobile (on zoome au doigt). */
+  .reglage--zoom{ display:none; }
+
+  /* Backdrop derrière la feuille « Réglages ». */
+  .sheet-backdrop{ display:block; position:fixed; inset:0; z-index:55;
+    background:rgba(44,40,35,.42); }
+
+  /* --------- Éditeur de forme = feuille en bas de l'ÉCRAN (hors plan) -----
+     Avant : en absolute dans .scene (coin haut-droit) → partie basse coupée,
+     inutilisable. Désormais : feuille fixée au bas du viewport, défilante. */
+  .editeur-flottant{
+    position:fixed; left:0; right:0; bottom:0; top:auto; width:auto;
+    max-height:80vh; overflow-y:auto; z-index:65;
+    border-radius:18px 18px 0 0; border:none; border-top:3px solid var(--ligne-or);
+    padding:16px 18px calc(18px + env(safe-area-inset-bottom));
+    box-shadow:0 -10px 40px rgba(60,50,40,.22);
+    overscroll-behavior:contain;
+  }
+
+  /* --------- Modales (forme / arbre) = feuilles plein écran en bas ------- */
+  .modal{ align-items:flex-end; padding:0; }
+  .modal__dialog, .modal__dialog--large{
+    width:100%; max-width:100%; max-height:92vh;
+    border-radius:18px 18px 0 0;
+    padding:20px 18px calc(18px + env(safe-area-inset-bottom));
+  }
+  .modal__actions .btn{ min-width:0; flex:1; }
+  .arbre-grille{ grid-template-columns:repeat(4, 1fr); }
 }
