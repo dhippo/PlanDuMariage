@@ -60,6 +60,51 @@ function supprimerSelection(){
 }
 
 
+/* ----- Interaction TACTILE des formes (mobile) ------------------------- */
+/* Sur écran tactile, une forme sélectionnée affiche un menu d'actions (08) ;
+   chacune de ces fonctions effectue la transition d'état correspondante puis
+   render(). Elles ne sont jamais déclenchées sur desktop. */
+
+// « Éditer » : ouvre la feuille d'édition, remise sur le 1er onglet « Forme ».
+function ouvrirEditeurMobile(){
+  if(!formeSelectionnee()) return;
+  editeurOuvert = true;
+  modeMobile = null;
+  document.body.classList.remove("mode-deplacer", "mode-tourner");
+  render();                                    // affiche d'abord la feuille…
+  const panels = document.getElementById("fe-panels");
+  if(panels) panels.scrollLeft = 0;            // …puis la replace sur l'onglet « Forme »
+  majOngletActif(0);
+}
+
+// Referme la feuille d'édition. retourMenu=true → on rouvre le menu d'actions
+// (forme conservée) ; sinon on désélectionne (retour au plan).
+function fermerEditeurMobile(retourMenu){
+  editeurOuvert = false;
+  if(!retourMenu) selection = null;
+  render();
+}
+
+// « Déplacer » / « Tourner » : entre dans un mode où le doigt manipule la forme
+// (voir 11-gestes), avec bouton « Valider », cadre coloré et barre masquée.
+function entrerModeMobile(mode){
+  if(!formeSelectionnee()) return;
+  modeMobile = mode;
+  editeurOuvert = false;
+  document.body.classList.toggle("mode-deplacer", mode === "deplacer");
+  document.body.classList.toggle("mode-tourner",  mode === "tourner");
+  render();
+}
+
+// « Valider » : sort du mode ; la forme reste sélectionnée → retour au menu.
+function sortirModeMobile(){
+  modeMobile = null;
+  document.body.classList.remove("mode-deplacer", "mode-tourner");
+  drag = null;
+  render();
+}
+
+
 /* ----- Arbres-images : pose par numéro (API + bouton) ------------------- */
 
 // Pose l'arbre n (1→40) sur le PLAN AFFICHÉ, centré en (x,y) cm, diamètre d cm.

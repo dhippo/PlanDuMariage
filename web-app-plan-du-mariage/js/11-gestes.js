@@ -86,6 +86,12 @@ function debutDragObjet(e){
     const id = parseInt(formeEl.getAttribute("data-forme"), 10);
     const f = formes.find(x => x.id === id);
     selection = { type:"forme", id };
+    if(estMobile()){
+      // Tactile : on NE déplace PAS directement (l'éditeur masquait le plan et
+      // empêchait le glisser). On sélectionne et on affiche le menu d'actions
+      // (08) ; déplacement/rotation se font ensuite dans un mode dédié.
+      drag = null; render(); return true;            // geste consommé (pas de pan)
+    }
     drag = { kind:"move-forme", id, dx: p.x - f.x, dy: p.y - f.y };
     svg.setPointerCapture(e.pointerId); render(); return true;
   }
@@ -173,11 +179,29 @@ svg.addEventListener("pointerdown", e => {
   if(pointers.size === 2){
     if(drag){ drag = null; render(); }
     pan = null;
+    masquerActionsForme();                   // le menu suivra la forme à la fin du geste
     for(const id of pointers.keys()){ try{ svg.releasePointerCapture(id); }catch(_){} }
     demarrerPinch();
     return;
   }
   if(pointers.size > 2) return;              // 3e doigt et + : ignorés
+
+  // MODE TACTILE actif (mobile) : 1 doigt manipule la forme sélectionnée — peu
+  // importe où l'on appuie sur le plan. (Le 2e doigt déclenche le pinch ci-dessus.)
+  if(modeMobile){
+    const f = formeSelectionnee();
+    if(f){
+      const p = ecranVersSvg(e.clientX, e.clientY);
+      if(modeMobile === "deplacer"){
+        drag = { kind:"move-forme", id:f.id, dx: p.x - f.x, dy: p.y - f.y };
+      } else {                               // "tourner" : offset pour éviter tout saut
+        const [cx, cy] = centreForme(f);
+        drag = { kind:"rotate-forme", id:f.id, offset:(f.angle || 0) - angleVers(cx, cy, p.x, p.y) };
+      }
+      try{ svg.setPointerCapture(e.pointerId); }catch(_){}
+    }
+    return;                                  // ni pan ni désélection en mode
+  }
 
   // 1er pointeur : objet ? sinon pan (tactile) / désélection (souris).
   if(debutDragObjet(e)) return;
@@ -185,6 +209,7 @@ svg.addEventListener("pointerdown", e => {
   if(e.pointerType !== "mouse"){             // doigt OU stylet (pen) : pan
     pan = { x0:e.clientX, y0:e.clientY,
             gauche0:scene.scrollLeft, haut0:scene.scrollTop, bouge:false };
+    masquerActionsForme();                   // pan : on cache le menu (repositionné à la fin)
     try{ svg.setPointerCapture(e.pointerId); }catch(_){}
   } else if(selection){                      // souris dans le vide : désélection (desktop)
     selection = null; render();
@@ -214,12 +239,14 @@ function finPointeur(e){
   try{ svg.releasePointerCapture(e.pointerId); }catch(_){}
 
   if(pinch){
-    if(pointers.size < 2){ pinch = null; mesurerBaseScene(); }   // fin du pinch
+    if(pointers.size < 2){ pinch = null; mesurerBaseScene(); majActionsForme(); }   // fin du pinch
     return;                                    // ne pas reprendre un drag ensuite
   }
   if(pan){
-    if(!pan.bouge && selection){ selection = null; render(); }   // tap net = désélection
+    const bouge = pan.bouge;
     pan = null;
+    if(!bouge){ if(selection){ selection = null; render(); } }   // tap net = désélection
+    else majActionsForme();                                      // fin de pan → repositionne le menu
     return;
   }
   if(drag){ drag = null; render(); }

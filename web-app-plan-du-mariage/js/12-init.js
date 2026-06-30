@@ -114,8 +114,38 @@ function init(){
   });
   peuplerSwatches("fe-fond", c => { const f = formeSelectionnee(); if(!f) return; f.fond = c; render(); });
   peuplerSwatches("fe-bord", c => { const f = formeSelectionnee(); if(!f) return; f.bord = c; render(); });
-  document.getElementById("fe-fermer").addEventListener("click", () => { selection = null; render(); });
+  // Fermeture (×) : desktop → désélection (inchangé). Mobile → retour au menu
+  // d'actions, la forme restant sélectionnée.
+  document.getElementById("fe-fermer").addEventListener("click", () => {
+    if(estMobile() && editeurOuvert) fermerEditeurMobile(true);
+    else { selection = null; render(); }
+  });
   document.getElementById("fe-suppr").addEventListener("click", supprimerSelection);
+
+  // --- Interaction TACTILE des formes (mobile) : menu d'actions, modes, onglets ---
+  // « Enregistrer » : referme la feuille (modifs déjà appliquées) et revient au plan.
+  document.getElementById("fe-enregistrer").addEventListener("click", () => fermerEditeurMobile(false));
+  document.getElementById("fa-deplacer").addEventListener("click", () => entrerModeMobile("deplacer"));
+  document.getElementById("fa-editer").addEventListener("click", ouvrirEditeurMobile);
+  document.getElementById("fa-tourner").addEventListener("click", () => entrerModeMobile("tourner"));
+  document.getElementById("btn-valider-mode").addEventListener("click", sortirModeMobile);
+
+  // Onglets de l'éditeur : le bouton fait défiler vers son panneau ; le balayage
+  // (scroll horizontal) met à jour l'onglet actif. Inerte sur desktop (onglets
+  // masqués, fe-panels en display:contents donc clientWidth = 0).
+  const fePanels = document.getElementById("fe-panels");
+  for(const b of document.querySelectorAll(".fe-onglet"))
+    b.addEventListener("click", () => {
+      const i = +b.dataset.onglet;
+      if(fePanels && fePanels.clientWidth)
+        fePanels.scrollTo({ left: i * fePanels.clientWidth, behavior:"smooth" });
+      majOngletActif(i);
+    });
+  if(fePanels)
+    fePanels.addEventListener("scroll", () => {
+      const w = fePanels.clientWidth;
+      if(w) majOngletActif(Math.round(fePanels.scrollLeft / w));
+    });
 
   // Réglages (chaque changement => render()).
   const rngD = document.getElementById("rng-diametre");
@@ -151,8 +181,25 @@ function init(){
   render();
   mesurerBaseScene();                                // zone utile de la scène
   appliquerZoom();                                   // dimensionne le SVG au démarrage
-  // Au resize / rotation d'écran : on remesure la base puis on réapplique.
-  window.addEventListener("resize", () => { mesurerBaseScene(); appliquerZoom(); });
+  // Au resize / rotation d'écran : on remesure la base puis on réapplique. Un
+  // simple repositionnement du menu d'actions suffit (léger) ; on ne reconstruit
+  // le SVG (render) qu'au FRANCHISSEMENT du seuil mobile/desktop, où l'on purge
+  // aussi tout état tactile résiduel.
+  let etaitMobile = estMobile();
+  window.addEventListener("resize", () => {
+    mesurerBaseScene(); appliquerZoom();
+    const mobile = estMobile();
+    if(mobile !== etaitMobile){
+      etaitMobile = mobile;
+      if(!mobile){
+        editeurOuvert = false; modeMobile = null;
+        document.body.classList.remove("mode-deplacer", "mode-tourner");
+      }
+      render();
+    } else {
+      majInterface();
+    }
+  });
 }
 
 init();

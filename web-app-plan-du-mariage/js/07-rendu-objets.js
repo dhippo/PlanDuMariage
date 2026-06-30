@@ -84,7 +84,9 @@ function dessinerFormes(){
     // Poignées (forme sélectionnée) : redimensionnement (coin bas-droit) +
     // ROTATION (au-dessus, reliée par un trait). Placées dans le groupe pivoté :
     // elles suivent donc l'orientation de la forme.
-    if(sel){
+    // MOBILE : pas de poignées (trop fines au doigt) — le redimensionnement passe
+    // par l'éditeur (Largeur/Hauteur) et la rotation par le mode « Tourner ».
+    if(sel && !estMobile()){
       gf.appendChild(el("circle", { cx:f.x + f.w, cy:f.y + f.h, r:11,
         "data-forme-handle": f.id, class:"poignee" }));
       const hy = f.y - 42;                          // poignée de rotation au-dessus

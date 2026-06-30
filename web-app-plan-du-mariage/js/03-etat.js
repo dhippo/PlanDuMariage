@@ -25,6 +25,21 @@ let idSuivantForme = 1;       // numérotation des formes
 let idSuivantArbre = 1;       // numérotation interne des arbres-images posés
 let selection      = null;    // { type:"table"|"forme"|"arbre", id } ou null
 
+/* ---- État de l'interface TACTILE (mobile ≤ 760px uniquement) -----------
+   Sur écran tactile, sélectionner une forme n'ouvre PAS directement l'éditeur
+   (il masquerait le plan et empêcherait le glisser) : on affiche d'abord un
+   petit menu d'actions « Déplacer / Éditer / Faire tourner » (voir 08-interface),
+   puis on bascule dans un MODE dédié (déplacer ou tourner) où le doigt manipule
+   la forme, avec un bouton « Valider » pour en sortir. Ces deux variables ne
+   sont jamais activées sur desktop (où l'éditeur flottant reste lié à la
+   sélection, comportement inchangé). */
+let editeurOuvert  = false;   // mobile : la feuille d'édition de forme est-elle ouverte ?
+let modeMobile     = null;    // mobile : null | "deplacer" | "tourner" (forme = selection)
+
+// Sommes-nous sur petit écran (tactile) ? Aligné sur la media query CSS
+// @media (max-width:760px) : une seule source de vérité pour la bascule mobile.
+function estMobile(){ return window.matchMedia("(max-width:760px)").matches; }
+
 /* ---- Arbres-images (illustrations PNG vues de dessus) ------------------ */
 // 40 éléments détourés dans assets/tree-elements/ (tree-01.png … tree-40.png),
 // numérotés 1→40 (voir la planche assets/tree-elements/_planche-reference.png).

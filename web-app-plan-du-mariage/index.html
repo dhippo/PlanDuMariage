@@ -71,7 +71,7 @@
           <span>Ajouter une forme</span>
         </button>
         <button id="btn-ajouter-arbre" class="btn btn--rect">
-          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0-3 11.2V18h6v-3.8A6 6 0 0 0 12 3Z"/><path d="M10 21h4"/></svg>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M12 14.5V20.5M9.2 20.5h5.6"/></svg>
           <span>Ajouter un arbre</span>
         </button>
       </div>
@@ -102,37 +102,95 @@
       <svg id="plan" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"></svg>
 
       <!-- Éditeur flottant : affiché en haut à droite, par-dessus le plan,
-           quand une FORME est sélectionnée. -->
+           quand une FORME est sélectionnée (desktop). Sur mobile, c'est une
+           feuille à onglets ouverte via le menu d'actions « Éditer ». -->
       <aside id="editeur-forme" class="editeur-flottant" hidden>
         <button id="fe-fermer" class="modal__close" type="button" aria-label="Fermer">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
         <h2>Forme</h2>
-        <label class="champ">Titre
-          <input type="text" id="fe-titre" maxlength="24" placeholder="ex. Buffet, Scène, Bar…">
-        </label>
-        <div class="champ-dims">
-          <label>Largeur <input type="number" id="fe-w" min="40" step="10"> cm</label>
-          <label>Hauteur <input type="number" id="fe-h" min="40" step="10"> cm</label>
+
+        <!-- Onglets — mobile uniquement (display:none sur desktop). Réduisent la
+             hauteur de la feuille : « Forme » (titre + dimensions) et « Couleurs »
+             sur deux pages que l'on balaie horizontalement. -->
+        <div class="fe-onglets" role="tablist" aria-label="Réglages de la forme">
+          <button type="button" class="fe-onglet active" data-onglet="0" aria-selected="true">Forme</button>
+          <button type="button" class="fe-onglet" data-onglet="1" aria-selected="false">Couleurs</button>
         </div>
-        <div class="champ-rotation">
-          <label>Rotation <input type="number" id="fe-angle" min="0" max="359" step="1"> °</label>
-          <button id="fe-angle-reset" class="btn-mini" type="button" title="Remettre la forme droite (0°)">Remettre droit</button>
+
+        <!-- Panneaux. Desktop : « transparents » (display:contents) → les champs
+             s'empilent comme avant. Mobile : deux pages défilables (scroll-snap). -->
+        <div class="fe-panels" id="fe-panels">
+          <div class="fe-panel fe-panel--forme" data-panel="0">
+            <label class="champ">Titre
+              <input type="text" id="fe-titre" maxlength="24" placeholder="ex. Buffet, Scène, Bar…">
+            </label>
+            <!-- Desktop : Largeur/Hauteur sur une ligne, Rotation + « Remettre droit »
+                 en dessous. Mobile : les 3 champs alignés (petits inputs), bouton
+                 « Remettre droit » et « ° » masqués. -->
+            <div class="fe-mesures">
+              <label class="fe-mesure">Largeur <input type="number" id="fe-w" min="40" step="10"><span class="fe-unite">cm</span></label>
+              <label class="fe-mesure">Hauteur <input type="number" id="fe-h" min="40" step="10"><span class="fe-unite">cm</span></label>
+              <label class="fe-mesure">Rotation <input type="number" id="fe-angle" min="0" max="359" step="1"><span class="fe-unite fe-unite--deg">°</span></label>
+              <button id="fe-angle-reset" class="btn-mini" type="button" title="Remettre la forme droite (0°)">Remettre droit</button>
+            </div>
+          </div>
+          <div class="fe-panel fe-panel--couleurs" data-panel="1">
+            <div class="champ">Fond
+              <div class="couleurs" id="fe-fond"></div>
+            </div>
+            <div class="champ">Contour
+              <div class="couleurs" id="fe-bord"></div>
+            </div>
+          </div>
         </div>
-        <div class="champ">Fond
-          <div class="couleurs" id="fe-fond"></div>
-        </div>
-        <div class="champ">Contour
-          <div class="couleurs" id="fe-bord"></div>
-        </div>
+
+        <!-- « Enregistrer » : mobile uniquement (referme la feuille ; les
+             modifications sont déjà appliquées en direct). Masqué sur desktop. -->
+        <button id="fe-enregistrer" class="btn btn--principal fe-enregistrer" type="button">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>
+          <span>Enregistrer</span>
+        </button>
         <button id="fe-suppr" class="btn btn--secondaire">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l.9 12.2a1 1 0 0 0 1 .8h7.2a1 1 0 0 0 1-.8L17.5 7"/></svg>
           <span>Supprimer cette forme</span>
         </button>
       </aside>
+
+      <!-- Menu d'actions tactile (mobile) : apparaît au-dessus d'une FORME
+           sélectionnée. 3 choix : déplacer, éditer, faire tourner. Positionné
+           en JS (positionnerActionsForme). Masqué sur desktop. -->
+      <div id="forme-actions" class="forme-actions" role="menu" aria-label="Actions sur la forme" hidden>
+        <button type="button" id="fa-deplacer" class="fa-btn" role="menuitem">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M3 12h18M12 3 9.5 5.5M12 3l2.5 2.5M12 21l-2.5-2.5M12 21l2.5-2.5M3 12l2.5-2.5M3 12l2.5 2.5M21 12l-2.5-2.5M21 12l-2.5 2.5"/></svg>
+          <span>Déplacer</span>
+        </button>
+        <button type="button" id="fa-editer" class="fa-btn" role="menuitem">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L18.5 9.5a2 2 0 0 0-2.8-2.8L5 17.5V20z"/><path d="M14 7.5l2.8 2.8"/></svg>
+          <span>Éditer</span>
+        </button>
+        <button type="button" id="fa-tourner" class="fa-btn" role="menuitem">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 9a8 8 0 1 1-.6 6"/><path d="M3 4v5h5"/></svg>
+          <span>Tourner</span>
+        </button>
+      </div>
     </div>
 
   </main>
+
+  <!-- ============= MODE TACTILE (déplacer / tourner) — overlay mobile =========
+       Bannière de mode + bouton « Valider ». N'apparaissent que lorsqu'un mode
+       est actif (classes body.mode-deplacer / body.mode-tourner), donc jamais
+       sur desktop. Le cadre coloré du plan et la barre d'outils masquée sont
+       gérés en CSS. -->
+  <div id="mode-banniere" class="mode-banniere" aria-live="polite" hidden>
+    <svg class="mode-banniere__ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v8M8 12h8"/><circle cx="12" cy="12" r="9.5"/></svg>
+    <span id="mode-banniere-txt"></span>
+  </div>
+  <button id="btn-valider-mode" class="btn-valider" type="button">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.2 4.2L19 7"/></svg>
+    <span>Valider</span>
+  </button>
 
   <!-- ===================== BARRE D'OUTILS (mobile) =======================
        Visible uniquement sur petit écran (display:none sur desktop). Reprend
@@ -148,7 +206,7 @@
       <span>Forme</span>
     </button>
     <button id="btn-m-arbre" class="barre-btn" type="button">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0-3 11.2V18h6v-3.8A6 6 0 0 0 12 3Z"/><path d="M10 21h4"/></svg>
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="5.5"/><path d="M12 14.5V20.5M9.2 20.5h5.6"/></svg>
       <span>Arbre</span>
     </button>
     <button id="btn-m-suppr" class="barre-btn" type="button" disabled>
